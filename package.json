@@ -1,20 +1,42 @@
 {
-  "scripts-instructions": "Replace your existing scripts section in package.json with the scripts below",
-
+  "name": "learnquest-lms",
+  "version": "0.1.0",
+  "private": true,
   "scripts": {
-    "dev":   "ts-node --project tsconfig.server.json server.ts",
+    "dev": "ts-node --project tsconfig.server.json server.ts",
     "build": "next build",
     "start": "NODE_ENV=production ts-node --project tsconfig.server.json server.ts",
-    "lint":  "next lint"
+    "lint": "next lint"
   },
-
-  "required-dependencies": {
-    "install-command": "npm install socket.io socket.io-client",
-    "install-dev":     "npm install -D ts-node @types/node"
+  "prisma": {
+    "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
   },
-
-  "env-to-add-to-.env": {
-    "NEXT_PUBLIC_SOCKET_URL": "",
-    "comment": "Leave NEXT_PUBLIC_SOCKET_URL empty for local dev. In production set it to your server URL e.g. https://yourapp.railway.app"
+  "dependencies": {
+    "@auth/prisma-adapter": "^2.7.4",
+    "@prisma/adapter-pg": "^7.4.1",
+    "@prisma/client": "^7.4.1",
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^17.3.1",
+    "next": "^15.1.6",
+    "next-auth": "^5.0.0-beta.25",
+    "pg": "^8.18.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "socket.io": "^4.8.1",
+    "socket.io-client": "^4.8.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.2.0",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/node": "^22.10.5",
+    "@types/pg": "^8.16.0",
+    "@types/react": "^19.0.3",
+    "@types/react-dom": "^19.0.2",
+    "eslint": "^9.17.0",
+    "eslint-config-next": "^15.1.6",
+    "prisma": "^7.4.1",
+    "tailwindcss": "^4.2.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.3"
   }
 }
