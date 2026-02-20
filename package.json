@@ -1,0 +1,20 @@
+{
+  "scripts-instructions": "Replace your existing scripts section in package.json with the scripts below",
+
+  "scripts": {
+    "dev":   "ts-node --project tsconfig.server.json server.ts",
+    "build": "next build",
+    "start": "NODE_ENV=production ts-node --project tsconfig.server.json server.ts",
+    "lint":  "next lint"
+  },
+
+  "required-dependencies": {
+    "install-command": "npm install socket.io socket.io-client",
+    "install-dev":     "npm install -D ts-node @types/node"
+  },
+
+  "env-to-add-to-.env": {
+    "NEXT_PUBLIC_SOCKET_URL": "",
+    "comment": "Leave NEXT_PUBLIC_SOCKET_URL empty for local dev. In production set it to your server URL e.g. https://yourapp.railway.app"
+  }
+}

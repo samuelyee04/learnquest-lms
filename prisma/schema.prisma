@@ -1,0 +1,154 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String       @id @default(cuid())
+  name        String
+  email       String       @unique
+  password    String
+  role        Role         @default(STUDENT)
+  avatar      String?
+  xpPoints    Int          @default(0)
+  level       Int          @default(1)
+  createdAt   DateTime     @default(now())
+  accounts    Account[]
+  discussions Discussion[]
+  enrollments Enrollment[]
+  quizResults QuizResult[]
+  sessions    Session[]
+}
+
+model Category {
+  id       String    @id @default(cuid())
+  name     String    @unique
+  icon     String
+  color    String
+  programs Program[]
+}
+
+model Program {
+  id           String       @id @default(cuid())
+  title        String
+  description  String
+  about        String
+  outcome      String
+  duration     String
+  difficulty   Difficulty   @default(BEGINNER)
+  rewardPoints Int          @default(100)
+  videoUrl     String?
+  thumbnail    String?
+  categoryId   String
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  discussions  Discussion[]
+  enrollments  Enrollment[]
+  category     Category     @relation(fields: [categoryId], references: [id])
+  quizzes      Quiz[]
+}
+
+model Enrollment {
+  id          String    @id @default(cuid())
+  userId      String
+  programId   String
+  progress    Int       @default(0)
+  completed   Boolean   @default(false)
+  enrolledAt  DateTime  @default(now())
+  completedAt DateTime?
+  program     Program   @relation(fields: [programId], references: [id])
+  user        User      @relation(fields: [userId], references: [id])
+
+  @@unique([userId, programId])
+}
+
+model Quiz {
+  id        String       @id @default(cuid())
+  programId String
+  questions Question[]
+  program   Program      @relation(fields: [programId], references: [id])
+  results   QuizResult[]
+}
+
+model Question {
+  id      String   @id @default(cuid())
+  quizId  String
+  text    String
+  options String[]
+  answer  Int
+  order   Int      @default(0)
+  quiz    Quiz     @relation(fields: [quizId], references: [id])
+}
+
+model QuizResult {
+  id        String   @id @default(cuid())
+  userId    String
+  quizId    String
+  score     Int
+  total     Int
+  passed    Boolean
+  createdAt DateTime @default(now())
+  quiz      Quiz     @relation(fields: [quizId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model Discussion {
+  id        String   @id @default(cuid())
+  programId String
+  userId    String
+  message   String
+  likes     Int      @default(0)
+  createdAt DateTime @default(now())
+  program   Program  @relation(fields: [programId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+enum Role {
+  STUDENT
+  ADMIN
+}
+
+enum Difficulty {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
