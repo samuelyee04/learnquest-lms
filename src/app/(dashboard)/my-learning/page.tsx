@@ -1,6 +1,8 @@
 'use client'
 // src/app/(dashboard)/my-learning/page.tsx
 
+export const dynamic = 'force-dynamic'
+
 import { useState, useEffect } from 'react'
 import { Enrollment } from '@/types'
 import ProgramCard from '@/components/programs/ProgramCard'

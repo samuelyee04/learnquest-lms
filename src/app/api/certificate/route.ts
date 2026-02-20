@@ -64,7 +64,7 @@ export async function GET(req: Request) {
 
     const completedDate = enrollment.completedAt
       ? new Date(enrollment.completedAt).toLocaleDateString('en-US', {
-          year: 'month', month: 'long', day: 'numeric'
+          year: 'numeric', month: 'long', day: 'numeric'
         })
       : new Date().toLocaleDateString('en-US', {
           year: 'numeric', month: 'long', day: 'numeric'

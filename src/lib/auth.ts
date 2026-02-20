@@ -53,6 +53,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (user) {
         token.id   = user.id
         token.role = (user as any).role
+        token.xpPoints = (user as any).xpPoints
+        token.level    = (user as any).level
       }
       return token
     },
@@ -61,6 +63,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (token) {
         session.user.id   = token.id as string
         session.user.role = token.role as string
+        session.user.xpPoints = token.xpPoints as number
+        session.user.level    = token.level    as number
       }
       return session
     }

@@ -6,31 +6,31 @@ import { NextResponse } from 'next/server'
 
 // ─────────────────────────────────────────────────────────────
 // GET /api/programs/:id
-// Returns single program with category, quizzes, and enrollment
-// count. Also returns the current user's enrollment if logged in.
+// Returns single program with category, quizzes, discussions
+// and the current user's enrollment if logged in
 // ─────────────────────────────────────────────────────────────
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await auth()
 
     const program = await prisma.program.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         category: true,
         quizzes: {
           include: {
             questions: {
               orderBy: { order: 'asc' },
-              // Never send correct answer index to the client!
+              // Never send correct answer index to the client
               select: {
-                id: true,
-                text: true,
+                id:      true,
+                text:    true,
                 options: true,
-                order: true,
-                // answer is intentionally excluded here
+                order:   true,
               },
             },
           },
@@ -44,22 +44,27 @@ export async function GET(
           orderBy: { createdAt: 'desc' },
           take: 20,
         },
-        _count: { select: { enrollments: true } },
+        _count: {
+          select: { enrollments: true },
+        },
       },
     })
 
     if (!program) {
-      return NextResponse.json({ error: 'Program not found' }, { status: 404 })
+      return NextResponse.json(
+        { error: 'Program not found' },
+        { status: 404 }
+      )
     }
 
-    // Attach current user's enrollment if they are logged in
+    // Attach the current user's enrollment if they are logged in
     let enrollment = null
     if (session?.user?.id) {
       enrollment = await prisma.enrollment.findUnique({
         where: {
           userId_programId: {
-            userId: session.user.id,
-            programId: params.id,
+            userId:    session.user.id,
+            programId: id,
           },
         },
       })
@@ -77,13 +82,16 @@ export async function GET(
 
 // ─────────────────────────────────────────────────────────────
 // PATCH /api/programs/:id  (Admin only)
-// Body: any subset of program fields to update
+// Updates any subset of program fields
+// Body: { title?, description?, about?, outcome?, duration?,
+//         difficulty?, rewardPoints?, videoUrl?, categoryId? }
 // ─────────────────────────────────────────────────────────────
 export async function PATCH(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await auth()
 
     if (!session?.user) {
@@ -96,22 +104,30 @@ export async function PATCH(
 
     const body = await req.json()
 
-    // Only allow safe fields to be updated
-    const { title, description, about, outcome, duration,
-            difficulty, rewardPoints, videoUrl, categoryId } = body
+    const {
+      title,
+      description,
+      about,
+      outcome,
+      duration,
+      difficulty,
+      rewardPoints,
+      videoUrl,
+      categoryId,
+    } = body
 
     const program = await prisma.program.update({
-      where: { id: params.id },
+      where: { id },
       data: {
-        ...(title       !== undefined && { title }),
-        ...(description !== undefined && { description }),
-        ...(about       !== undefined && { about }),
-        ...(outcome     !== undefined && { outcome }),
-        ...(duration    !== undefined && { duration }),
-        ...(difficulty  !== undefined && { difficulty }),
+        ...(title        !== undefined && { title }),
+        ...(description  !== undefined && { description }),
+        ...(about        !== undefined && { about }),
+        ...(outcome      !== undefined && { outcome }),
+        ...(duration     !== undefined && { duration }),
+        ...(difficulty   !== undefined && { difficulty }),
         ...(rewardPoints !== undefined && { rewardPoints }),
-        ...(videoUrl    !== undefined && { videoUrl }),
-        ...(categoryId  !== undefined && { categoryId }),
+        ...(videoUrl     !== undefined && { videoUrl }),
+        ...(categoryId   !== undefined && { categoryId }),
       },
       include: {
         category: true,
@@ -131,12 +147,14 @@ export async function PATCH(
 
 // ─────────────────────────────────────────────────────────────
 // DELETE /api/programs/:id  (Admin only)
+// Permanently removes the program and all related data
 // ─────────────────────────────────────────────────────────────
 export async function DELETE(
   _req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await auth()
 
     if (!session?.user) {
@@ -147,7 +165,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    await prisma.program.delete({ where: { id: params.id } })
+    await prisma.program.delete({ where: { id } })
 
     return new Response(null, { status: 204 })
   } catch (error) {

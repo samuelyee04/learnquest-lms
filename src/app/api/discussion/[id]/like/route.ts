@@ -1,6 +1,4 @@
 // src/app/api/discussion/[id]/like/route.ts
-// POST /api/discussion/:id/like
-// Increments the like count on a discussion message
 
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/lib/auth'
@@ -8,7 +6,7 @@ import { NextResponse } from 'next/server'
 
 export async function POST(
   _req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth()
@@ -17,9 +15,12 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // ✅ Await params before using it
+    const { id } = await params
+
     const updated = await prisma.discussion.update({
-      where: { id: params.id },
-      data:  { likes: { increment: 1 } },
+      where:  { id },
+      data:   { likes: { increment: 1 } },
       select: { id: true, likes: true },
     })
 

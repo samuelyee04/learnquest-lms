@@ -88,9 +88,9 @@ export default function DiscussionBoard({ programId, catColor }: Props) {
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify({ programId, message: text }),
       })
-      const saved: Discussion = await res.json()
+      const saved: Discussion | { error: string } = await res.json()
 
-      if (saved.error) throw new Error(saved.error as any)
+      if ('error' in saved) throw new Error(saved.error)
 
       // 2. Add to local state immediately (optimistic)
       setMessages(prev => [...prev, saved])
