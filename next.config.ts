@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
   serverExternalPackages: ['pg', '@prisma/client', '@prisma/adapter-pg'],
 
   typescript: {
-    ignoreBuildErrors: true,  // ← set to true for now
+    ignoreBuildErrors: false,  // ← set to true for now
   },
 
   images: {
