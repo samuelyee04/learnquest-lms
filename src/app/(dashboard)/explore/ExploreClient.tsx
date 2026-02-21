@@ -18,7 +18,6 @@ export default function ExplorePage() {
   const [programs, setPrograms]    = useState<Program[]>([])
   const [categories, setCategories] = useState<Category[]>([])
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
-  const [search, setSearch]        = useState(urlSearch)
   const [loading, setLoading]      = useState(true)
   const [openProgram, setOpenProgram] = useState<Program | null>(null)
   const [toast, setToast]          = useState<string | null>(null)
@@ -28,7 +27,7 @@ export default function ExplorePage() {
     try {
       const params = new URLSearchParams()
       if (activeCategory) params.set('category', activeCategory)
-      if (search)         params.set('search', search)
+      if (urlSearch)      params.set('search', urlSearch)
 
       const [progRes, catRes] = await Promise.all([
         fetch(`/api/programs?${params}`),
@@ -48,7 +47,7 @@ export default function ExplorePage() {
     } finally {
       setLoading(false)
     }
-  }, [activeCategory, search])
+  }, [activeCategory, urlSearch])
 
   useEffect(() => {
     const t = setTimeout(fetchPrograms, 300) // debounce search
@@ -106,22 +105,6 @@ export default function ExplorePage() {
         <p className="font-mono text-white/35 text-sm max-w-lg mx-auto">
           Learn, complete quizzes, earn XP and certificates
         </p>
-
-        {/* Search bar */}
-        <div className="flex items-center gap-3 max-w-lg mx-auto mt-7 bg-white/5 border border-white/10 rounded-2xl px-5 py-3">
-          <span className="text-white/30">🔍</span>
-          <input
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            placeholder="Search programs, topics..."
-            className="flex-1 bg-transparent border-none outline-none text-white font-mono text-sm placeholder:text-white/25"
-          />
-          {search && (
-            <button onClick={() => setSearch('')} className="text-white/25 hover:text-white text-xs font-mono">
-              ✕
-            </button>
-          )}
-        </div>
       </div>
 
       {/* Category bar */}

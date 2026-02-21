@@ -1,65 +1,67 @@
 'use client'
-// src/components/discussion/DiscussionBoard.tsx
-// Full version with real-time Socket.io support.
-// Replace the previous DiscussionBoard.tsx with this one.
 
 import { useState, useEffect, useRef } from 'react'
 import { useSession } from 'next-auth/react'
 import { Discussion } from '@/types'
-import { getSocket, disconnectSocket } from '@/lib/socket'
+import { getSocket } from '@/lib/socket'
 
 interface Props {
   programId: string
   catColor:  string
+  isAdmin?:  boolean
+  onCleared?: () => void
 }
 
-export default function DiscussionBoard({ programId, catColor }: Props) {
-  const { data: session }        = useSession()
-  const [messages, setMessages]  = useState<Discussion[]>([])
-  const [newMsg, setNewMsg]      = useState('')
-  const [loading, setLoading]    = useState(true)
-  const [sending, setSending]    = useState(false)
-  const [connected, setConnected] = useState(false)
-  const bottomRef                 = useRef<HTMLDivElement>(null)
+const POLL_INTERVAL_MS = 4000
 
-  // ── Fetch existing messages from API ──────────────────────────────────────
-  useEffect(() => {
+export default function DiscussionBoard({ programId, catColor, isAdmin = false, onCleared }: Props) {
+  const { data: session }         = useSession()
+  const [messages, setMessages]   = useState<Discussion[]>([])
+  const [newMsg, setNewMsg]       = useState('')
+  const [loading, setLoading]     = useState(true)
+  const [sending, setSending]     = useState(false)
+  const [connected, setConnected]  = useState(false)
+  const [clearing, setClearing]   = useState(false)
+  const bottomRef                  = useRef<HTMLDivElement>(null)
+
+  const loadMessages = () =>
     fetch(`/api/discussion?programId=${programId}`)
       .then(r => r.json())
       .then(data => { if (Array.isArray(data)) setMessages(data) })
       .catch(console.error)
-      .finally(() => setLoading(false))
+
+  useEffect(() => {
+    loadMessages().finally(() => setLoading(false))
   }, [programId])
+
+  // Poll when socket is not connected so updates show without switching tabs
+  useEffect(() => {
+    if (connected) return
+    const t = setInterval(loadMessages, POLL_INTERVAL_MS)
+    return () => clearInterval(t)
+  }, [programId, connected])
 
   // ── Connect Socket.io and join program room ───────────────────────────────
   useEffect(() => {
     const socket = getSocket()
-
-    // Join the room for this program
     socket.emit('join-program', programId)
     setConnected(socket.connected)
 
-    // Listen for new messages from other users
     socket.on('message', (data: Discussion) => {
       setMessages(prev => {
-        // Avoid duplicate if we already added it optimistically
         if (prev.find(m => m.id === data.id)) return prev
         return [...prev, data]
       })
     })
-
-    // Listen for like updates
     socket.on('message-liked', ({ messageId }: { messageId: string }) => {
       setMessages(prev =>
         prev.map(m => m.id === messageId ? { ...m, likes: m.likes + 1 } : m)
       )
     })
-
     socket.on('connect',    () => setConnected(true))
     socket.on('disconnect', () => setConnected(false))
 
     return () => {
-      // Leave the room and clean up listeners when component unmounts
       socket.emit('leave-program', programId)
       socket.off('message')
       socket.off('message-liked')
@@ -144,15 +146,41 @@ export default function DiscussionBoard({ programId, catColor }: Props) {
   return (
     <div className="flex flex-col gap-4">
 
-      {/* Live indicator */}
-      <div className="flex items-center gap-2">
-        <div
-          className={`w-2 h-2 rounded-full ${connected ? 'bg-green-400' : 'bg-white/20'}`}
-          style={connected ? { boxShadow: '0 0 6px #4ade80' } : {}}
-        />
-        <span className="font-mono text-xs text-white/30">
-          {connected ? 'Live' : 'Connecting...'}
-        </span>
+      {/* Live / status indicator */}
+      <div className="flex items-center justify-between gap-2 flex-wrap">
+        <div className="flex items-center gap-2">
+          <div
+            className={`w-2 h-2 rounded-full ${connected ? 'bg-green-400' : 'bg-amber-400/80'}`}
+            style={connected ? { boxShadow: '0 0 6px #4ade80' } : {}}
+          />
+          <span className="font-mono text-xs text-white/30">
+            {connected ? 'Live' : 'Connecting… (updates every few seconds)'}
+          </span>
+        </div>
+        {isAdmin && (
+          <button
+            type="button"
+            onClick={async () => {
+              if (!confirm('Clear all messages in this discussion? This cannot be undone.')) return
+              setClearing(true)
+              try {
+                const res = await fetch(`/api/discussion?programId=${programId}`, { method: 'DELETE' })
+                if (res.ok) {
+                  setMessages([])
+                  onCleared?.()
+                }
+              } catch (e) {
+                console.error(e)
+              } finally {
+                setClearing(false)
+              }
+            }}
+            disabled={clearing || messages.length === 0}
+            className="font-mono text-xs text-white/40 hover:text-red-400 disabled:opacity-40"
+          >
+            {clearing ? 'Clearing…' : 'Clear discussion'}
+          </button>
+        )}
       </div>
 
       {/* Message input */}

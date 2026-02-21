@@ -9,7 +9,6 @@ export default function Navbar() {
   const { data: session, status } = useSession()
   const pathname                  = usePathname()
   const router                    = useRouter()
-  const [search, setSearch]       = useState('')
   const [menuOpen, setMenuOpen]   = useState(false)
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
@@ -39,13 +38,6 @@ export default function Navbar() {
     ...(isAdmin ? [{ href: '/admin', label: 'Admin' }] : []),
   ]
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (search.trim()) {
-      router.push(`/explore?search=${encodeURIComponent(search.trim())}`)
-    }
-  }
-
   if (isLoading) {
     return (
       <nav className="sticky top-0 z-50 h-16 bg-[#0a0a14]/95 backdrop-blur-xl border-b border-white/10">
@@ -69,29 +61,6 @@ export default function Navbar() {
           >
             LQ
           </Link>
-
-          {isLoggedIn && (
-            <form onSubmit={handleSearch} className="flex-1 max-w-sm hidden md:flex">
-              <div className="flex w-full items-center gap-2 bg-white/5 border border-white/10 rounded-xl px-4 py-2">
-                <span className="text-white/40 text-sm">&#x1F50D;</span>
-                <input
-                  value={search}
-                  onChange={e => setSearch(e.target.value)}
-                  placeholder="Search programs..."
-                  className="bg-transparent border-none outline-none text-white text-sm placeholder:text-white/30 w-full font-mono"
-                />
-                {search && (
-                  <button
-                    type="button"
-                    onClick={() => setSearch('')}
-                    className="text-white/25 hover:text-white text-xs font-mono"
-                  >
-                    X
-                  </button>
-                )}
-              </div>
-            </form>
-          )}
 
           {isLoggedIn ? (
             <>
@@ -197,23 +166,6 @@ export default function Navbar() {
 
         {menuOpen && (
           <div className="md:hidden pb-5 space-y-2 border-t border-white/10 pt-4">
-            {isLoggedIn && (
-              <form onSubmit={handleSearch} className="flex gap-2 mb-4">
-                <input
-                  value={search}
-                  onChange={e => setSearch(e.target.value)}
-                  placeholder="Search programs..."
-                  className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm font-mono outline-none placeholder:text-white/25"
-                />
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-cyan-400/15 border border-cyan-400/25 text-cyan-400 rounded-xl text-sm font-mono font-bold"
-                >
-                  Go
-                </button>
-              </form>
-            )}
-
             {isLoggedIn ? (
               <>
                 {navLinks.map(link => (

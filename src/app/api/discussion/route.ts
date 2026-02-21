@@ -65,3 +65,28 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Failed to post message' }, { status: 500 })
   }
 }
+
+// DELETE /api/discussion?programId=xxx — Admin only: clear all messages for a program
+export async function DELETE(req: Request) {
+  try {
+    const session = await auth()
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    if (session.user.role !== 'ADMIN') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+
+    const { searchParams } = new URL(req.url)
+    const programId = searchParams.get('programId')
+    if (!programId) {
+      return NextResponse.json({ error: 'programId is required' }, { status: 400 })
+    }
+
+    await prisma.discussion.deleteMany({ where: { programId } })
+    return NextResponse.json({ ok: true })
+  } catch (error) {
+    console.error('[DISCUSSION_DELETE]', error)
+    return NextResponse.json({ error: 'Failed to clear discussion' }, { status: 500 })
+  }
+}

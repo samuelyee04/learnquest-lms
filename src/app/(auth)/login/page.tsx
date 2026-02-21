@@ -5,13 +5,15 @@ import { signIn } from 'next-auth/react'
 import Link from 'next/link'
 
 export default function LoginPage() {
-  const [form, setForm]     = useState({ email: '', password: '' })
-  const [error, setError]   = useState<string | null>(null)
+  const [form, setForm]       = useState({ email: '', password: '' })
+  const [error, setError]     = useState<string | null>(null)
+  const [success, setSuccess] = useState(false)
   const [loading, setLoading] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
+    setSuccess(false)
     setLoading(true)
 
     try {
@@ -22,14 +24,17 @@ export default function LoginPage() {
       })
 
       if (!result?.ok) {
-        setError(result?.error === 'CredentialsSignin'
-          ? 'Invalid email or password.'
-          : result?.error || 'Sign in failed. Please try again.')
+        setError(
+          result?.error === 'CredentialsSignin' || result?.error
+            ? 'Invalid email or password. Please try again.'
+            : 'Sign in failed. Please try again.'
+        )
         setLoading(false)
         return
       }
 
-      window.location.href = '/explore'
+      setSuccess(true)
+      setTimeout(() => { window.location.href = '/explore' }, 800)
     } catch {
       setError('Something went wrong. Please try again.')
       setLoading(false)
@@ -87,9 +92,15 @@ export default function LoginPage() {
             </div>
           )}
 
+          {success && (
+            <div className="bg-green-500/10 border border-green-500/20 rounded-xl px-4 py-3 text-green-400 font-mono text-xs">
+              Login successful! Redirecting...
+            </div>
+          )}
+
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || success}
             className="w-full py-4 rounded-xl font-mono font-bold text-sm uppercase tracking-widest text-[#0a0a14] mt-2 hover:opacity-90 active:scale-95 transition-all disabled:opacity-50"
             style={{ background: 'linear-gradient(135deg, #00f5d4, #4cc9f0)' }}
           >

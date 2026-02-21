@@ -12,6 +12,20 @@ export default function MyLearningPage() {
   const [openProgram, setOpenProgram] = useState<any>(null)
   const [toast, setToast]             = useState<string | null>(null)
 
+  const handleLeave = async (programId: string) => {
+    const res = await fetch('/api/enrollments', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ programId }),
+    })
+    if (res.ok) {
+      setEnrollments(prev => prev.filter(e => e.programId !== programId))
+      setToast('Left program. You can re-enroll anytime.')
+    } else {
+      setToast('Failed to leave program.')
+    }
+  }
+
   useEffect(() => {
     fetch('/api/enrollments')
       .then(async r => {
@@ -80,6 +94,8 @@ export default function MyLearningPage() {
               <ProgramCard
                 key={e.id}
                 program={{ ...e.program, enrollment: e }}
+                showLeaveButton
+                onLeave={handleLeave}
               />
             ))}
           </div>

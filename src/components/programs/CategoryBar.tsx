@@ -11,7 +11,7 @@ interface Props {
 
 export default function CategoryBar({ categories, activeId, onSelect }: Props) {
   return (
-    <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide px-1">
+    <div className="flex flex-wrap gap-3 pb-2 px-1">
       {/* All button */}
       <button
         onClick={() => onSelect(null)}

@@ -28,9 +28,10 @@ export default function ProgramDetailPage() {
   const [program, setProgram] = useState<(Program & { episodes?: any[]; quizzes?: any[] }) | null>(null)
   const [loading, setLoading] = useState(true)
   const [fetchError, setFetchError] = useState<string | null>(null)
-  const [tab, setTab]         = useState<Tab>('overview')
-  const [quiz, setQuiz]       = useState<any>(null)
-  const [toast, setToast]     = useState<string | null>(null)
+  const [tab, setTab]           = useState<Tab>('overview')
+  const [selectedQuiz, setSelectedQuiz] = useState<any>(null)
+  const [selectedEpisode, setSelectedEpisode] = useState<any | null>(null)
+  const [toast, setToast]       = useState<string | null>(null)
   const [enrolling, setEnrolling] = useState(false)
   const [editing, setEditing] = useState(false)
   const [leaving, setLeaving] = useState(false)
@@ -63,7 +64,6 @@ export default function ProgramDetailPage() {
           return
         }
         setProgram(data)
-        if (data.quizzes?.[0]) setQuiz(data.quizzes[0])
       })
       .catch(err => {
         console.error('[ProgramDetail]', err)
@@ -160,6 +160,7 @@ export default function ProgramDetailPage() {
     )
   }
 
+  const canAccessLocked = isEnrolled || isAdmin
   const tabs: { id: Tab; label: string }[] = [
     { id: 'overview',   label: 'Overview' },
     { id: 'episodes',   label: 'Episodes' },
@@ -225,7 +226,7 @@ export default function ProgramDetailPage() {
           </div>
 
           {/* Tabs */}
-          <div className="flex gap-1 mt-6 overflow-x-auto">
+          <div className="flex flex-wrap gap-1 mt-6">
             {tabs.map(t => (
               <button
                 key={t.id}
@@ -249,45 +250,6 @@ export default function ProgramDetailPage() {
 
         {tab === 'overview' && (
           <div className="space-y-8">
-            {/* ── Video section: always show so students can watch ── */}
-            <section aria-label="Program video">
-              <h2 className="text-xs font-mono font-bold uppercase tracking-widest mb-3" style={{ color: cat.color }}>
-                📺 Watch
-              </h2>
-              {(() => {
-                const embedUrl = toYouTubeEmbedUrl(program.videoUrl)
-                if (embedUrl) {
-                  return (
-                    <div className="rounded-xl overflow-hidden aspect-video bg-black border border-white/10 shadow-xl">
-                      <iframe
-                        src={embedUrl}
-                        title={`Video: ${program.title}`}
-                        className="w-full h-full border-none"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
-                      />
-                    </div>
-                  )
-                }
-                return (
-                  <div className="rounded-xl aspect-video bg-white/5 border border-white/10 flex flex-col items-center justify-center gap-3 p-6">
-                    <span className="text-4xl opacity-50">🎬</span>
-                    <p className="text-white/40 font-mono text-sm text-center">No video added yet</p>
-                    {isAdmin && (
-                      <button
-                        type="button"
-                        onClick={() => setEditing(true)}
-                        className="text-xs font-mono font-bold uppercase tracking-wider"
-                        style={{ color: cat.color }}
-                      >
-                        Edit program to add a video URL
-                      </button>
-                    )}
-                  </div>
-                )
-              })()}
-            </section>
-
             <p className="text-white/60 font-mono text-sm leading-relaxed">{program.description}</p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -366,7 +328,7 @@ export default function ProgramDetailPage() {
               </div>
               {!isEnrolled && (
                 <p className="text-white/35 font-mono text-xs mt-3">
-                  Enroll to track progress, take the quiz, and earn your certificate.
+                  Enroll to access episodes, quizzes, and discussion, track progress, and earn your certificate.
                 </p>
               )}
             </div>
@@ -375,35 +337,73 @@ export default function ProgramDetailPage() {
 
         {tab === 'episodes' && (
           <div>
-            {(!program.episodes || program.episodes.length === 0) ? (
+            {!canAccessLocked ? (
+              <div className="rounded-xl p-8 border border-white/10 bg-white/[0.03] text-center">
+                <div className="text-4xl mb-4">🔒</div>
+                <p className="text-white/60 font-mono text-sm mb-2">Episodes are available after you enroll.</p>
+                <button
+                  onClick={handleEnroll}
+                  disabled={enrolling}
+                  className="mt-4 px-6 py-3 rounded-xl font-mono font-bold text-sm uppercase tracking-widest text-[#0a0a14]"
+                  style={{ background: `linear-gradient(135deg, ${cat.color}, #4cc9f0)` }}
+                >
+                  {enrolling ? 'Enrolling...' : 'Enroll to access'}
+                </button>
+              </div>
+            ) : (!program.episodes || program.episodes.length === 0) ? (
               <div className="text-center py-16 text-white/30 font-mono text-sm">
                 <div className="text-4xl mb-4">🎬</div>
                 <p>No episodes available yet.</p>
               </div>
             ) : (
-              <div className="space-y-3">
-                {program.episodes.map((ep: any, i: number) => (
-                  <div key={ep.id} className="flex items-center gap-4 p-4 bg-white/4 rounded-xl border border-white/6">
-                    <div className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-mono font-bold" style={{ background: `${cat.color}20`, color: cat.color }}>
-                      {i + 1}
+              <div className="space-y-6">
+                {selectedEpisode && (() => {
+                  const embedUrl = toYouTubeEmbedUrl(selectedEpisode.videoUrl)
+                  return embedUrl ? (
+                    <div className="rounded-xl overflow-hidden aspect-video bg-black border border-white/10">
+                      <iframe
+                        src={embedUrl}
+                        title={selectedEpisode.title}
+                        className="w-full h-full border-none"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                      />
+                      <div className="flex items-center justify-between p-3 bg-white/5 border-t border-white/10">
+                        <p className="font-mono font-bold text-white text-sm">{selectedEpisode.title}</p>
+                        <button
+                          onClick={() => setSelectedEpisode(null)}
+                          className="text-white/50 hover:text-white font-mono text-xs"
+                        >
+                          Close
+                        </button>
+                      </div>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-mono font-bold text-white text-sm truncate">{ep.title}</p>
+                  ) : (
+                    <div className="rounded-xl p-4 bg-white/5 border border-white/10 flex items-center justify-between">
+                      <p className="font-mono text-white/60 text-sm">{selectedEpisode.title} — no video</p>
+                      <button onClick={() => setSelectedEpisode(null)} className="text-white/50 hover:text-white text-xs font-mono">Close</button>
+                    </div>
+                  )
+                })()}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {program.episodes.map((ep: any, i: number) => (
+                    <button
+                      key={ep.id}
+                      type="button"
+                      onClick={() => setSelectedEpisode(ep)}
+                      className="text-left p-4 rounded-xl bg-white/4 border border-white/6 hover:bg-white/6 hover:border-white/10 transition-all"
+                    >
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className="w-10 h-10 rounded-lg flex items-center justify-center text-sm font-mono font-bold" style={{ background: `${cat.color}20`, color: cat.color }}>
+                          {i + 1}
+                        </div>
+                        <span className="font-mono font-bold text-white text-sm line-clamp-1">{ep.title}</span>
+                      </div>
                       {ep.duration && <p className="font-mono text-white/35 text-xs">{ep.duration}</p>}
-                    </div>
-                    {ep.videoUrl && (
-                      <a
-                        href={ep.videoUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="px-3 py-1.5 rounded-lg text-xs font-mono font-bold uppercase tracking-wider transition-all"
-                        style={{ background: `${cat.color}15`, border: `1px solid ${cat.color}30`, color: cat.color }}
-                      >
-                        Watch
-                      </a>
-                    )}
-                  </div>
-                ))}
+                      <span className="mt-2 inline-block text-xs font-mono" style={{ color: cat.color }}>▶ Watch</span>
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
           </div>
@@ -411,45 +411,101 @@ export default function ProgramDetailPage() {
 
         {tab === 'quiz' && (
           <div className="space-y-8">
-            {isAdmin && (
-              <AdminQuizSection
-                programId={id!}
-                existingQuiz={program.quizzes?.[0] ?? null}
-                catColor={cat.color}
-                onUpdate={() => {
-                  fetch(`/api/programs/${id}`)
-                    .then(r => r.json())
-                    .then(data => {
-                      if (!data.error) {
-                        setProgram(data)
-                        if (data.quizzes?.[0]) setQuiz(data.quizzes[0])
-                      }
-                    })
-                    .catch(console.error)
-                }}
-              />
+            {!canAccessLocked ? (
+              <div className="rounded-xl p-8 border border-white/10 bg-white/[0.03] text-center">
+                <div className="text-4xl mb-4">🔒</div>
+                <p className="text-white/60 font-mono text-sm mb-2">Quizzes are available after you enroll.</p>
+                <button
+                  onClick={handleEnroll}
+                  disabled={enrolling}
+                  className="mt-4 px-6 py-3 rounded-xl font-mono font-bold text-sm uppercase tracking-widest text-[#0a0a14]"
+                  style={{ background: `linear-gradient(135deg, ${cat.color}, #4cc9f0)` }}
+                >
+                  {enrolling ? 'Enrolling...' : 'Enroll to access'}
+                </button>
+              </div>
+            ) : (
+              <>
+                {isAdmin && (
+                  <AdminQuizSection
+                    programId={id!}
+                    existingQuiz={program.quizzes?.[0] ?? null}
+                    catColor={cat.color}
+                    onUpdate={() => {
+                      fetch(`/api/programs/${id}`)
+                        .then(r => r.json())
+                        .then(data => { if (!data.error) setProgram(data) })
+                        .catch(console.error)
+                    }}
+                  />
+                )}
+                <div>
+                  {!program.quizzes?.length ? (
+                    <div className="text-center py-16 text-white/30 font-mono text-sm">
+                      <div className="text-4xl mb-4">🧠</div>
+                      <p>No quizzes for this program yet.</p>
+                      {isAdmin && <p className="mt-2 text-white/50">Add a quiz above.</p>}
+                    </div>
+                  ) : selectedQuiz ? (
+                    <div>
+                      <button
+                        onClick={() => setSelectedQuiz(null)}
+                        className="text-white/50 hover:text-white font-mono text-xs mb-4"
+                      >
+                        ← Back to quizzes
+                      </button>
+                      {selectedQuiz.questions?.length === 0 ? (
+                        <p className="text-white/40 font-mono text-sm">No questions in this quiz yet.</p>
+                      ) : (
+                        <QuizEngine quiz={selectedQuiz} catColor={cat.color} onComplete={handleQuizComplete} />
+                      )}
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {program.quizzes.map((q: any, i: number) => (
+                        <button
+                          key={q.id}
+                          type="button"
+                          onClick={() => setSelectedQuiz(q)}
+                          className="text-left p-5 rounded-xl bg-white/4 border border-white/6 hover:bg-white/6 hover:border-white/10 transition-all"
+                        >
+                          <div className="text-2xl mb-2">🧠</div>
+                          <p className="font-mono font-bold text-white text-sm">Quiz {i + 1}</p>
+                          <p className="font-mono text-white/40 text-xs mt-1">{q.questions?.length ?? 0} questions</p>
+                          <span className="mt-2 inline-block text-xs font-mono" style={{ color: cat.color }}>Start →</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </>
             )}
-            <div>
-              {!quiz ? (
-                <div className="text-center py-16 text-white/30 font-mono text-sm">
-                  <div className="text-4xl mb-4">🧠</div>
-                  <p>No quiz available for this program yet.</p>
-                  {isAdmin && <p className="mt-2 text-white/50">Add a question above to create the quiz.</p>}
-                </div>
-              ) : quiz.questions?.length === 0 ? (
-                <div className="text-center py-16 text-white/30 font-mono text-sm">
-                  No quiz questions added yet.
-                  {isAdmin && <p className="mt-2 text-white/50">Add a question above.</p>}
-                </div>
-              ) : (
-                <QuizEngine quiz={quiz} catColor={cat.color} onComplete={handleQuizComplete} />
-              )}
-            </div>
           </div>
         )}
 
         {tab === 'discussion' && (
-          <DiscussionBoard programId={id} catColor={cat.color} />
+          <div>
+            {!canAccessLocked ? (
+              <div className="rounded-xl p-8 border border-white/10 bg-white/[0.03] text-center">
+                <div className="text-4xl mb-4">🔒</div>
+                <p className="text-white/60 font-mono text-sm mb-2">Discussion is available after you enroll.</p>
+                <button
+                  onClick={handleEnroll}
+                  disabled={enrolling}
+                  className="mt-4 px-6 py-3 rounded-xl font-mono font-bold text-sm uppercase tracking-widest text-[#0a0a14]"
+                  style={{ background: `linear-gradient(135deg, ${cat.color}, #4cc9f0)` }}
+                >
+                  {enrolling ? 'Enrolling...' : 'Enroll to access'}
+                </button>
+              </div>
+            ) : (
+              <DiscussionBoard
+                programId={id}
+                catColor={cat.color}
+                isAdmin={isAdmin}
+              />
+            )}
+          </div>
         )}
 
         {tab === 'manage' && isAdmin && (
