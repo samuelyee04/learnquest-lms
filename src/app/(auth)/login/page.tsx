@@ -1,5 +1,4 @@
 'use client'
-// src/app/(auth)/login/page.tsx
 
 import { useState } from 'react'
 import { signIn } from 'next-auth/react'
@@ -30,7 +29,7 @@ export default function LoginPage() {
         router.push('/explore')
         router.refresh()
       }
-    } catch (err) {
+    } catch {
       setError('Something went wrong. Please try again.')
     } finally {
       setLoading(false)
@@ -39,40 +38,20 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-[#06060f] flex items-center justify-center p-4">
-      {/* Background stars */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        {Array.from({ length: 50 }).map((_, i) => (
-          <div
-            key={i}
-            className="absolute rounded-full bg-white"
-            style={{
-              left:   `${Math.random() * 100}%`,
-              top:    `${Math.random() * 100}%`,
-              width:  `${Math.random() * 2 + 0.5}px`,
-              height: `${Math.random() * 2 + 0.5}px`,
-              opacity: Math.random() * 0.6 + 0.1,
-              animation: `twinkle ${Math.random() * 3 + 1}s ease-in-out infinite alternate`,
-            }}
-          />
-        ))}
-      </div>
-
       <div
         className="relative z-10 w-full max-w-md bg-[#0f0f1e]/90 backdrop-blur-2xl rounded-2xl p-10"
         style={{ border: '1px solid rgba(0,245,212,.15)', boxShadow: '0 0 80px rgba(0,245,212,.06)' }}
       >
-        {/* Logo */}
         <div className="text-center mb-8">
           <div className="text-5xl mb-4">🎮</div>
           <h1 className="font-mono font-black text-2xl tracking-widest bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
             LEARNQUEST
           </h1>
           <p className="font-mono text-white/30 text-xs mt-2 tracking-widest">
-            XP • REWARDS • MASTERY
+            XP &bull; REWARDS &bull; MASTERY
           </p>
         </div>
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block font-mono text-xs font-bold uppercase tracking-widest text-cyan-400 mb-2">
@@ -104,7 +83,7 @@ export default function LoginPage() {
 
           {error && (
             <div className="bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 text-red-400 font-mono text-xs">
-              ❌ {error}
+              {error}
             </div>
           )}
 
@@ -114,7 +93,7 @@ export default function LoginPage() {
             className="w-full py-4 rounded-xl font-mono font-bold text-sm uppercase tracking-widest text-[#0a0a14] mt-2 hover:opacity-90 active:scale-95 transition-all disabled:opacity-50"
             style={{ background: 'linear-gradient(135deg, #00f5d4, #4cc9f0)' }}
           >
-            {loading ? 'Signing in...' : 'Launch →'}
+            {loading ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
 
@@ -125,13 +104,6 @@ export default function LoginPage() {
           </Link>
         </p>
       </div>
-
-      <style>{`
-        @keyframes twinkle {
-          from { opacity: .1; }
-          to   { opacity: .7; }
-        }
-      `}</style>
     </div>
   )
 }

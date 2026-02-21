@@ -1,5 +1,4 @@
 'use client'
-// src/app/(auth)/register/page.tsx
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -43,20 +42,32 @@ export default function RegisterPage() {
         return
       }
 
-      // Auto sign in after registration
-      await signIn('credentials', {
+      const result = await signIn('credentials', {
         email:    form.email,
         password: form.password,
         redirect: false,
       })
 
+      if (result?.error) {
+        setError('Account created but auto sign-in failed. Please sign in manually.')
+        return
+      }
+
       router.push('/explore')
-    } catch (err) {
+      router.refresh()
+    } catch {
       setError('Something went wrong. Please try again.')
     } finally {
       setLoading(false)
     }
   }
+
+  const fields = [
+    { label: 'Full Name',        key: 'name',     type: 'text',     placeholder: 'Alex Rivera' },
+    { label: 'Email',            key: 'email',    type: 'email',    placeholder: 'you@example.com' },
+    { label: 'Password',         key: 'password', type: 'password', placeholder: '8+ characters' },
+    { label: 'Confirm Password', key: 'confirm',  type: 'password', placeholder: 'Re-enter password' },
+  ]
 
   return (
     <div className="min-h-screen bg-[#06060f] flex items-center justify-center p-4">
@@ -73,12 +84,7 @@ export default function RegisterPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {[
-            { label: 'Full Name',        key: 'name',     type: 'text',     placeholder: 'Alex Rivera' },
-            { label: 'Email',            key: 'email',    type: 'email',    placeholder: 'you@example.com' },
-            { label: 'Password',         key: 'password', type: 'password', placeholder: '••••••••' },
-            { label: 'Confirm Password', key: 'confirm',  type: 'password', placeholder: '••••••••' },
-          ].map(field => (
+          {fields.map(field => (
             <div key={field.key}>
               <label className="block font-mono text-xs font-bold uppercase tracking-widest text-cyan-400 mb-2">
                 {field.label}
@@ -96,7 +102,7 @@ export default function RegisterPage() {
 
           {error && (
             <div className="bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 text-red-400 font-mono text-xs">
-              ❌ {error}
+              {error}
             </div>
           )}
 
@@ -106,7 +112,7 @@ export default function RegisterPage() {
             className="w-full py-4 rounded-xl font-mono font-bold text-sm uppercase tracking-widest text-[#0a0a14] mt-2 hover:opacity-90 active:scale-95 transition-all disabled:opacity-50"
             style={{ background: 'linear-gradient(135deg, #00f5d4, #4cc9f0)' }}
           >
-            {loading ? 'Creating account...' : 'Create Account →'}
+            {loading ? 'Creating account...' : 'Create Account'}
           </button>
         </form>
 
