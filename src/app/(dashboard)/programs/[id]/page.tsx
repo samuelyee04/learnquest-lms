@@ -20,12 +20,14 @@ const difficultyColor: Record<string, string> = {
 }
 
 export default function ProgramDetailPage() {
-  const { id } = useParams<{ id: string }>()
+  const params = useParams()
+  const id = typeof params?.id === 'string' ? params.id : Array.isArray(params?.id) ? params.id[0] : undefined
   const router = useRouter()
   const { data: session } = useSession()
 
   const [program, setProgram] = useState<(Program & { episodes?: any[]; quizzes?: any[] }) | null>(null)
   const [loading, setLoading] = useState(true)
+  const [fetchError, setFetchError] = useState<string | null>(null)
   const [tab, setTab]         = useState<Tab>('overview')
   const [quiz, setQuiz]       = useState<any>(null)
   const [toast, setToast]     = useState<string | null>(null)
@@ -40,15 +42,34 @@ export default function ProgramDetailPage() {
   const cat = program?.category ?? { name: 'Program', icon: '📚', color: '#4cc9f0', id: '' }
 
   useEffect(() => {
-    if (!id) return
-    fetch(`/api/programs/${id}`)
+    if (!id) {
+      setLoading(false)
+      setFetchError('Missing program ID')
+      return
+    }
+    setFetchError(null)
+    setLoading(true)
+    fetch(`/api/programs/${encodeURIComponent(id)}`)
       .then(async r => {
         const data = await r.json().catch(() => ({}))
-        if (!r.ok || data.error) return
+        if (!r.ok) {
+          setFetchError(data?.error || `Failed to load (${r.status})`)
+          setProgram(null)
+          return
+        }
+        if (!data || !data.id || !data.category) {
+          setFetchError('Invalid program data')
+          setProgram(null)
+          return
+        }
         setProgram(data)
         if (data.quizzes?.[0]) setQuiz(data.quizzes[0])
       })
-      .catch(console.error)
+      .catch(err => {
+        console.error('[ProgramDetail]', err)
+        setFetchError('Could not load program')
+        setProgram(null)
+      })
       .finally(() => setLoading(false))
   }, [id])
 
@@ -121,9 +142,14 @@ export default function ProgramDetailPage() {
 
   if (!program) {
     return (
-      <div className="min-h-screen bg-[#06060f] flex flex-col items-center justify-center gap-4">
+      <div className="min-h-screen bg-[#06060f] flex flex-col items-center justify-center gap-4 px-4">
         <div className="text-5xl">🔍</div>
-        <p className="text-white/40 font-mono text-sm">Program not found</p>
+        <p className="text-white/40 font-mono text-sm text-center">
+          {fetchError || 'Program not found'}
+        </p>
+        <p className="text-white/25 font-mono text-xs text-center max-w-sm">
+          The program may have been removed or the link is incorrect.
+        </p>
         <button
           onClick={() => router.push('/explore')}
           className="px-6 py-2 rounded-xl bg-white/5 border border-white/10 text-white/50 font-mono text-xs hover:bg-white/10 transition-colors"
@@ -222,20 +248,45 @@ export default function ProgramDetailPage() {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
         {tab === 'overview' && (
-          <div className="space-y-6">
-            {(() => {
-              const embedUrl = toYouTubeEmbedUrl(program.videoUrl)
-              return embedUrl ? (
-                <div className="rounded-xl overflow-hidden aspect-video bg-black">
-                  <iframe
-                    src={embedUrl}
-                    className="w-full h-full border-none"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope"
-                    allowFullScreen
-                  />
-                </div>
-              ) : null
-            })()}
+          <div className="space-y-8">
+            {/* ── Video section: always show so students can watch ── */}
+            <section aria-label="Program video">
+              <h2 className="text-xs font-mono font-bold uppercase tracking-widest mb-3" style={{ color: cat.color }}>
+                📺 Watch
+              </h2>
+              {(() => {
+                const embedUrl = toYouTubeEmbedUrl(program.videoUrl)
+                if (embedUrl) {
+                  return (
+                    <div className="rounded-xl overflow-hidden aspect-video bg-black border border-white/10 shadow-xl">
+                      <iframe
+                        src={embedUrl}
+                        title={`Video: ${program.title}`}
+                        className="w-full h-full border-none"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                      />
+                    </div>
+                  )
+                }
+                return (
+                  <div className="rounded-xl aspect-video bg-white/5 border border-white/10 flex flex-col items-center justify-center gap-3 p-6">
+                    <span className="text-4xl opacity-50">🎬</span>
+                    <p className="text-white/40 font-mono text-sm text-center">No video added yet</p>
+                    {isAdmin && (
+                      <button
+                        type="button"
+                        onClick={() => setEditing(true)}
+                        className="text-xs font-mono font-bold uppercase tracking-wider"
+                        style={{ color: cat.color }}
+                      >
+                        Edit program to add a video URL
+                      </button>
+                    )}
+                  </div>
+                )
+              })()}
+            </section>
 
             <p className="text-white/60 font-mono text-sm leading-relaxed">{program.description}</p>
 
@@ -273,39 +324,50 @@ export default function ProgramDetailPage() {
               </div>
             )}
 
-            <div className="flex flex-wrap gap-3 items-center">
-              {!isEnrolled ? (
-                <button
-                  onClick={handleEnroll}
-                  disabled={enrolling}
-                  className="flex-1 py-4 rounded-xl font-mono font-bold text-sm uppercase tracking-widest text-[#0a0a14] hover:opacity-90 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                  style={{ background: `linear-gradient(135deg, ${cat.color}, #4cc9f0)` }}
-                >
-                  {enrolling ? 'Enrolling...' : 'Enroll Now — Free'}
-                </button>
-              ) : (
-                <>
+            {/* ── Enroll CTA: clear option for students ── */}
+            <div className="rounded-xl p-6 border border-white/10 bg-white/[0.03]">
+              <h3 className="text-xs font-mono font-bold uppercase tracking-widest mb-4" style={{ color: cat.color }}>
+                {isEnrolled ? 'Your enrollment' : 'Join this program'}
+              </h3>
+              <div className="flex flex-wrap gap-3 items-center">
+                {!isEnrolled ? (
                   <button
-                    disabled
-                    className="flex-1 py-4 rounded-xl font-mono font-bold text-sm uppercase tracking-widest transition-all cursor-not-allowed opacity-90"
-                    style={{
-                      background: 'rgba(255,255,255,0.08)',
-                      color: 'rgba(255,255,255,0.5)',
-                      border: '1px solid rgba(255,255,255,0.12)',
-                    }}
+                    onClick={handleEnroll}
+                    disabled={enrolling}
+                    className="flex-1 min-w-[200px] py-4 rounded-xl font-mono font-bold text-sm uppercase tracking-widest text-[#0a0a14] hover:opacity-90 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    style={{ background: `linear-gradient(135deg, ${cat.color}, #4cc9f0)` }}
                   >
-                    ✓ Enrolled
+                    {enrolling ? 'Enrolling...' : 'Enroll now — Free'}
                   </button>
-                  {!isCompleted && (
+                ) : (
+                  <>
                     <button
-                      onClick={handleLeave}
-                      disabled={leaving}
-                      className="px-6 py-3 rounded-xl font-mono font-bold text-xs uppercase tracking-widest text-white/40 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 transition-all disabled:opacity-40"
+                      disabled
+                      className="flex-1 min-w-[200px] py-4 rounded-xl font-mono font-bold text-sm uppercase tracking-widest transition-all cursor-not-allowed opacity-90"
+                      style={{
+                        background: 'rgba(255,255,255,0.08)',
+                        color: 'rgba(255,255,255,0.5)',
+                        border: '1px solid rgba(255,255,255,0.12)',
+                      }}
                     >
-                      {leaving ? '...' : 'Leave Program'}
+                      ✓ Enrolled
                     </button>
-                  )}
-                </>
+                    {!isCompleted && (
+                      <button
+                        onClick={handleLeave}
+                        disabled={leaving}
+                        className="px-6 py-3 rounded-xl font-mono font-bold text-xs uppercase tracking-widest text-white/40 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 transition-all disabled:opacity-40"
+                      >
+                        {leaving ? '...' : 'Leave program'}
+                      </button>
+                    )}
+                  </>
+                )}
+              </div>
+              {!isEnrolled && (
+                <p className="text-white/35 font-mono text-xs mt-3">
+                  Enroll to track progress, take the quiz, and earn your certificate.
+                </p>
               )}
             </div>
           </div>
