@@ -1,12 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { signIn } from 'next-auth/react'
 
 export default function RegisterPage() {
-  const router = useRouter()
   const [form, setForm]     = useState({ name: '', email: '', password: '', confirm: '' })
   const [error, setError]   = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
@@ -39,6 +37,7 @@ export default function RegisterPage() {
       const data = await res.json()
       if (!res.ok) {
         setError(data.error ?? 'Registration failed.')
+        setLoading(false)
         return
       }
 
@@ -48,16 +47,15 @@ export default function RegisterPage() {
         redirect: false,
       })
 
-      if (result?.error) {
-        setError('Account created but auto sign-in failed. Please sign in manually.')
+      if (!result?.ok) {
+        setError('Account created but sign-in failed. Please go to the login page.')
+        setLoading(false)
         return
       }
 
-      router.push('/explore')
-      router.refresh()
+      window.location.href = '/explore'
     } catch {
       setError('Something went wrong. Please try again.')
-    } finally {
       setLoading(false)
     }
   }

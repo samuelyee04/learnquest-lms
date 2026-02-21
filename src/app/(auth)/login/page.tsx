@@ -2,11 +2,9 @@
 
 import { useState } from 'react'
 import { signIn } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
 export default function LoginPage() {
-  const router = useRouter()
   const [form, setForm]     = useState({ email: '', password: '' })
   const [error, setError]   = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
@@ -23,15 +21,17 @@ export default function LoginPage() {
         redirect: false,
       })
 
-      if (result?.error) {
-        setError('Invalid email or password. Please try again.')
-      } else {
-        router.push('/explore')
-        router.refresh()
+      if (!result?.ok) {
+        setError(result?.error === 'CredentialsSignin'
+          ? 'Invalid email or password.'
+          : result?.error || 'Sign in failed. Please try again.')
+        setLoading(false)
+        return
       }
+
+      window.location.href = '/explore'
     } catch {
       setError('Something went wrong. Please try again.')
-    } finally {
       setLoading(false)
     }
   }
