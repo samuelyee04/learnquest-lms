@@ -48,8 +48,20 @@ model Program {
   updatedAt    DateTime     @updatedAt
   discussions  Discussion[]
   enrollments  Enrollment[]
+  episodes     Episode[]
   category     Category     @relation(fields: [categoryId], references: [id])
   quizzes      Quiz[]
+}
+
+model Episode {
+  id        String   @id @default(cuid())
+  programId String
+  title     String
+  videoUrl  String?
+  duration  String?
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  program   Program  @relation(fields: [programId], references: [id], onDelete: Cascade)
 }
 
 model Enrollment {

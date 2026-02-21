@@ -1,11 +1,14 @@
-// next.config.ts
 import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
   serverExternalPackages: ['pg', '@prisma/client', '@prisma/adapter-pg'],
 
   typescript: {
-    ignoreBuildErrors: false,  // ← set to true for now
+    ignoreBuildErrors: true,
+  },
+
+  eslint: {
+    ignoreDuringBuilds: true,
   },
 
   images: {

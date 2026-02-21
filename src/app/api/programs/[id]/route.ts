@@ -21,11 +21,13 @@ export async function GET(
       where: { id },
       include: {
         category: true,
+        episodes: {
+          orderBy: { order: 'asc' },
+        },
         quizzes: {
           include: {
             questions: {
               orderBy: { order: 'asc' },
-              // Never send correct answer index to the client
               select: {
                 id:      true,
                 text:    true,

@@ -81,6 +81,16 @@ export interface QuizResult {
   resultId: string
 }
 
+export interface Episode {
+  id:        string
+  programId: string
+  title:     string
+  videoUrl:  string | null
+  duration:  string | null
+  order:     number
+  createdAt: string
+}
+
 export interface Discussion {
   id:        string
   programId: string

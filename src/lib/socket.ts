@@ -1,35 +1,23 @@
-// src/lib/socket.ts
-// Socket.io CLIENT singleton.
-// Import this in any React component that needs real-time features.
-//
-// Usage:
-//   import { getSocket } from '@/lib/socket'
-//   const socket = getSocket()
-//   socket.emit('join-program', programId)
-//   socket.on('message', (data) => { ... })
-
 import { io, Socket } from 'socket.io-client'
 
-// Module-level singleton — one socket for the whole app
 let socket: Socket | null = null
 
 export function getSocket(): Socket {
   if (!socket) {
-    socket = io(
-      // In production, connect to your deployed server URL.
-      // In dev, connects to localhost:3000 (same as Next.js).
-      process.env.NEXT_PUBLIC_SOCKET_URL ?? '',
-      {
-        // Start with WebSocket, fall back to long-polling
-        transports:         ['websocket', 'polling'],
-        // Reconnect automatically on disconnect
-        reconnection:       true,
-        reconnectionAttempts: 5,
-        reconnectionDelay:  1000,
-        // Don't auto-connect — we connect manually when needed
-        autoConnect:        false,
-      }
-    )
+    const url = process.env.NEXT_PUBLIC_SOCKET_URL ?? ''
+
+    if (!url) {
+      socket = createNoopSocket()
+      return socket
+    }
+
+    socket = io(url, {
+      transports: ['websocket', 'polling'],
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
+      autoConnect: false,
+    })
 
     socket.on('connect', () => {
       console.log('[Socket.io] Connected:', socket?.id)
@@ -44,8 +32,7 @@ export function getSocket(): Socket {
     })
   }
 
-  // Connect if not already connected
-  if (!socket.connected) {
+  if (!socket.connected && process.env.NEXT_PUBLIC_SOCKET_URL) {
     socket.connect()
   }
 
@@ -57,4 +44,20 @@ export function disconnectSocket(): void {
     socket.disconnect()
     socket = null
   }
+}
+
+function createNoopSocket(): Socket {
+  const noop = () => {}
+  const noopSocket = {
+    connected: false,
+    id: undefined,
+    on: () => noopSocket,
+    off: () => noopSocket,
+    emit: () => noopSocket,
+    connect: noop,
+    disconnect: noop,
+    join: noop,
+    leave: noop,
+  } as unknown as Socket
+  return noopSocket
 }
