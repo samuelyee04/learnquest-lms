@@ -6,8 +6,9 @@ import { Program } from '@/types'
 import { useRouter } from 'next/navigation'
 
 interface Props {
-  program:   Program
-  onEnroll?: (programId: string) => void
+  program:         Program
+  onEnroll?:       (programId: string) => void
+  showEnrollButton?: boolean  // false on Explore (card-only click)
 }
 
 const difficultyColor: Record<string, string> = {
@@ -22,7 +23,7 @@ const difficultyLabel: Record<string, string> = {
   ADVANCED:     'Advanced',
 }
 
-export default function ProgramCard({ program, onEnroll }: Props) {
+export default function ProgramCard({ program, onEnroll, showEnrollButton = true }: Props) {
   const router      = useRouter()
   const [loading, setLoading] = useState(false)
   const cat         = program.category
@@ -99,8 +100,8 @@ export default function ProgramCard({ program, onEnroll }: Props) {
           <span>⏱️ {program.duration}</span>
         </div>
 
-        {/* Progress bar — only shown when enrolled */}
-        {isEnrolled && (
+        {/* Progress bar — only when enrolled and showEnrollButton (e.g. My Learning) */}
+        {showEnrollButton && isEnrolled && (
           <div className="mb-4">
             <div className="flex justify-between text-xs font-mono mb-1.5">
               <span className="text-white/35">PROGRESS</span>
@@ -118,7 +119,8 @@ export default function ProgramCard({ program, onEnroll }: Props) {
           </div>
         )}
 
-        {/* Enroll / Enrolled button — when enrolled, disabled and grey; card click opens program */}
+        {/* Enroll / Enrolled button — hidden on Explore (showEnrollButton=false) */}
+        {showEnrollButton && (
         <button
           onClick={handleEnroll}
           disabled={loading || isEnrolled}
@@ -145,6 +147,7 @@ export default function ProgramCard({ program, onEnroll }: Props) {
             ? '✓ Enrolled'
             : '⚡ Enroll Now'}
         </button>
+        )}
       </div>
     </div>
   )

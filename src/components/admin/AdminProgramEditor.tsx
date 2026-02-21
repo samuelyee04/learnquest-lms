@@ -110,7 +110,7 @@ export default function AdminProgramEditor({ program, catColor, onSaved, onCance
         </select>
       </div>
 
-      {field('Video URL (YouTube Embed)', 'videoUrl', 'input', 'https://www.youtube.com/embed/...')}
+      {field('Video URL (YouTube Embed)', 'videoUrl', 'input', 'Paste any YouTube URL (watch or embed)')}
 
       {error && (
         <p className="text-red-400 font-mono text-xs">{error}</p>

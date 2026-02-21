@@ -153,14 +153,14 @@ export default function ExplorePage() {
               <ProgramCard
                 key={program.id}
                 program={program}
-                onEnroll={handleEnroll}
+                showEnrollButton={false}
               />
             ))}
           </div>
         )}
       </div>
 
-      {/* Program modal */}
+      {/* Program modal — optional quick view; users can click card to go to full program page */}
       {openProgram && (
         <ProgramModal
           program={openProgram}

@@ -13,6 +13,7 @@ export default function AdminProgramsPage() {
   const [loading, setLoading]       = useState(true)
   const [editing, setEditing]       = useState<Program | null>(null)
   const [creating, setCreating]     = useState(false)
+  const [creatingSubmitting, setCreatingSubmitting] = useState(false)
   const [toast, setToast]           = useState<string | null>(null)
   const [deleting, setDeleting]     = useState<string | null>(null)
 
@@ -40,6 +41,8 @@ export default function AdminProgramsPage() {
       setToast('Please fill in all required fields')
       return
     }
+    if (creatingSubmitting) return
+    setCreatingSubmitting(true)
     try {
       const res = await fetch('/api/programs', {
         method: 'POST',
@@ -50,14 +53,19 @@ export default function AdminProgramsPage() {
           videoUrl: newForm.videoUrl || null,
         }),
       })
-      if (!res.ok) throw new Error('Failed to create')
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err.error || 'Failed to create')
+      }
       const created = await res.json()
       setPrograms(prev => [created, ...prev])
       setCreating(false)
       setNewForm({ title: '', description: '', about: '', outcome: '', duration: '', difficulty: 'BEGINNER', rewardPoints: 100, videoUrl: '', categoryId: '' })
       setToast('Program created successfully!')
-    } catch {
-      setToast('Failed to create program')
+    } catch (e) {
+      setToast(e instanceof Error ? e.message : 'Failed to create program')
+    } finally {
+      setCreatingSubmitting(false)
     }
   }
 
@@ -69,6 +77,9 @@ export default function AdminProgramsPage() {
       if (res.ok || res.status === 204) {
         setPrograms(prev => prev.filter(p => p.id !== id))
         setToast('Program deleted')
+      } else {
+        const err = await res.json().catch(() => ({}))
+        setToast(err.error || 'Failed to delete program')
       }
     } catch {
       setToast('Failed to delete program')
@@ -190,15 +201,16 @@ export default function AdminProgramsPage() {
             <input
               value={newForm.videoUrl}
               onChange={e => setNewForm(f => ({ ...f, videoUrl: e.target.value }))}
-              placeholder="Video URL (YouTube embed)"
+              placeholder="Video URL (any YouTube link: watch or embed)"
               className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm font-mono outline-none placeholder:text-white/25"
             />
             <button
               onClick={handleCreate}
-              className="w-full py-3 rounded-xl font-mono font-bold text-xs uppercase tracking-widest text-[#0a0a14] hover:opacity-90 active:scale-95 transition-all"
+              disabled={creatingSubmitting}
+              className="w-full py-3 rounded-xl font-mono font-bold text-xs uppercase tracking-widest text-[#0a0a14] hover:opacity-90 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ background: 'linear-gradient(135deg, #00f5d4, #4cc9f0)' }}
             >
-              Create Program
+              {creatingSubmitting ? 'Creating...' : 'Create Program'}
             </button>
           </div>
         )}

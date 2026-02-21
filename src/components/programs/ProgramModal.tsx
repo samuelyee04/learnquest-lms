@@ -4,6 +4,7 @@
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { Program, Quiz, Discussion } from '@/types'
+import { toYouTubeEmbedUrl } from '@/lib/youtube'
 import QuizEngine from '@/components/quiz/QuizEngine'
 import DiscussionBoard from '@/components/discussion/DiscussionBoard'
 import AdminProgramEditor from '@/components/admin/AdminProgramEditor'
@@ -116,7 +117,7 @@ export default function ProgramModal({ program, onClose, onEnroll, onUpdate }: P
                 {program.title}
               </h2>
               <div className="flex items-center gap-5 mt-3 text-xs font-mono text-white/35">
-                <span>👥 {program._count.enrollments.toLocaleString()} students</span>
+                <span>👥 {(program._count?.enrollments ?? 0).toLocaleString()} students</span>
                 <span>⏱️ {program.duration}</span>
                 <span className="text-yellow-400 font-bold">⚡ +{program.rewardPoints} XP</span>
               </div>
@@ -155,16 +156,19 @@ export default function ProgramModal({ program, onClose, onEnroll, onUpdate }: P
           {tab === 'overview' && (
             <div className="space-y-5">
               {/* Video player */}
-              {program.videoUrl && (
-                <div className="rounded-xl overflow-hidden aspect-video bg-black">
-                  <iframe
-                    src={program.videoUrl}
-                    className="w-full h-full border-none"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope"
-                    allowFullScreen
-                  />
-                </div>
-              )}
+              {(() => {
+                const embedUrl = toYouTubeEmbedUrl(program.videoUrl)
+                return embedUrl ? (
+                  <div className="rounded-xl overflow-hidden aspect-video bg-black">
+                    <iframe
+                      src={embedUrl}
+                      className="w-full h-full border-none"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope"
+                      allowFullScreen
+                    />
+                  </div>
+                ) : null
+              })()}
 
               {/* About + Outcome */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

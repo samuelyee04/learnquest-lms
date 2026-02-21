@@ -2,19 +2,21 @@
 
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/lib/auth'
+import { toYouTubeEmbedUrl } from '@/lib/youtube'
 import { NextResponse } from 'next/server'
 
 // ─────────────────────────────────────────────────────────────
 // GET /api/programs
 // GET /api/programs?category=categoryId
 // GET /api/programs?search=react
-// GET /api/programs?category=categoryId&search=react
+// When authenticated, each program includes the current user's enrollment
 // ─────────────────────────────────────────────────────────────
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url)
     const category = searchParams.get('category')
     const search = searchParams.get('search')
+    const session = await auth()
 
     const programs = await prisma.program.findMany({
       where: {
@@ -34,6 +36,23 @@ export async function GET(req: Request) {
       },
       orderBy: { createdAt: 'desc' },
     })
+
+    // When logged in, attach current user's enrollment to each program
+    if (session?.user?.id && programs.length > 0) {
+      const programIds = programs.map(p => p.id)
+      const enrollments = await prisma.enrollment.findMany({
+        where: {
+          userId: session.user.id,
+          programId: { in: programIds },
+        },
+      })
+      const enrollmentByProgram = new Map(enrollments.map(e => [e.programId, e]))
+      const programsWithEnrollment = programs.map(p => ({
+        ...p,
+        enrollment: enrollmentByProgram.get(p.id) ?? null,
+      }))
+      return NextResponse.json(programsWithEnrollment)
+    }
 
     return NextResponse.json(programs)
   } catch (error) {
@@ -75,6 +94,8 @@ export async function POST(req: Request) {
       )
     }
 
+    const videoUrlNormalized = videoUrl ? (toYouTubeEmbedUrl(videoUrl) ?? videoUrl) : null
+
     const program = await prisma.program.create({
       data: {
         title,
@@ -84,7 +105,7 @@ export async function POST(req: Request) {
         duration,
         difficulty: difficulty ?? 'BEGINNER',
         rewardPoints: rewardPoints ?? 100,
-        videoUrl: videoUrl ?? null,
+        videoUrl: videoUrlNormalized,
         categoryId,
       },
       include: {

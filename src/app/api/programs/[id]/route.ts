@@ -2,6 +2,7 @@
 
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/lib/auth'
+import { toYouTubeEmbedUrl } from '@/lib/youtube'
 import { NextResponse } from 'next/server'
 
 // ─────────────────────────────────────────────────────────────
@@ -118,6 +119,11 @@ export async function PATCH(
       categoryId,
     } = body
 
+    const videoUrlNormalized =
+      videoUrl !== undefined
+        ? (toYouTubeEmbedUrl(videoUrl) ?? (videoUrl === '' ? null : videoUrl))
+        : undefined
+
     const program = await prisma.program.update({
       where: { id },
       data: {
@@ -128,7 +134,7 @@ export async function PATCH(
         ...(duration     !== undefined && { duration }),
         ...(difficulty   !== undefined && { difficulty }),
         ...(rewardPoints !== undefined && { rewardPoints }),
-        ...(videoUrl     !== undefined && { videoUrl }),
+        ...(videoUrlNormalized !== undefined && { videoUrl: videoUrlNormalized }),
         ...(categoryId   !== undefined && { categoryId }),
       },
       include: {

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { Program } from '@/types'
+import { toYouTubeEmbedUrl } from '@/lib/youtube'
 import QuizEngine from '@/components/quiz/QuizEngine'
 import DiscussionBoard from '@/components/discussion/DiscussionBoard'
 import AdminProgramEditor from '@/components/admin/AdminProgramEditor'
@@ -182,7 +183,7 @@ export default function ProgramDetailPage() {
                 {program.title}
               </h1>
               <div className="flex flex-wrap items-center gap-4 mt-3 text-xs font-mono text-white/35">
-                <span>👥 {program._count.enrollments} students</span>
+                <span>👥 {program._count?.enrollments ?? 0} students</span>
                 <span>⏱️ {program.duration}</span>
                 <span className="text-yellow-400 font-bold">⚡ +{program.rewardPoints} XP</span>
               </div>
@@ -222,16 +223,19 @@ export default function ProgramDetailPage() {
 
         {tab === 'overview' && (
           <div className="space-y-6">
-            {program.videoUrl && (
-              <div className="rounded-xl overflow-hidden aspect-video bg-black">
-                <iframe
-                  src={program.videoUrl}
-                  className="w-full h-full border-none"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope"
-                  allowFullScreen
-                />
-              </div>
-            )}
+            {(() => {
+              const embedUrl = toYouTubeEmbedUrl(program.videoUrl)
+              return embedUrl ? (
+                <div className="rounded-xl overflow-hidden aspect-video bg-black">
+                  <iframe
+                    src={embedUrl}
+                    className="w-full h-full border-none"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope"
+                    allowFullScreen
+                  />
+                </div>
+              ) : null
+            })()}
 
             <p className="text-white/60 font-mono text-sm leading-relaxed">{program.description}</p>
 
