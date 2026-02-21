@@ -231,15 +231,27 @@ export default function ProgramModal({ program, onClose, onEnroll, onUpdate }: P
                 </div>
               )}
 
-              {/* Enroll button */}
-              {!isEnrolled && (
+              {/* Enroll / Enrolled button */}
+              {!isEnrolled ? (
                 <button
                   onClick={handleEnroll}
                   disabled={enrolling}
-                  className="w-full py-4 rounded-xl font-mono font-bold text-sm uppercase tracking-widest text-[#0a0a14] hover:opacity-90 active:scale-95 transition-all disabled:opacity-50"
+                  className="w-full py-4 rounded-xl font-mono font-bold text-sm uppercase tracking-widest text-[#0a0a14] hover:opacity-90 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   style={{ background: `linear-gradient(135deg, ${cat.color}, #4cc9f0)` }}
                 >
                   {enrolling ? '...' : '⚡ Enroll Now — Free'}
+                </button>
+              ) : (
+                <button
+                  disabled
+                  className="w-full py-4 rounded-xl font-mono font-bold text-sm uppercase tracking-widest transition-all cursor-not-allowed opacity-90"
+                  style={{
+                    background: 'rgba(255,255,255,0.08)',
+                    color: 'rgba(255,255,255,0.5)',
+                    border: '1px solid rgba(255,255,255,0.12)',
+                  }}
+                >
+                  ✓ Enrolled
                 </button>
               )}
             </div>

@@ -24,12 +24,12 @@ export default function AdminProgramsPage() {
 
   useEffect(() => {
     Promise.all([
-      fetch('/api/programs').then(r => r.json()),
-      fetch('/api/categories').then(r => r.json()),
+      fetch('/api/programs').then(async r => ({ ok: r.ok, data: await r.json().catch(() => null) })),
+      fetch('/api/categories').then(async r => ({ ok: r.ok, data: await r.json().catch(() => null) })),
     ])
       .then(([progs, cats]) => {
-        if (Array.isArray(progs)) setPrograms(progs)
-        if (Array.isArray(cats)) setCategories(cats)
+        if (progs.ok && Array.isArray(progs.data)) setPrograms(progs.data)
+        if (cats.ok && Array.isArray(cats.data)) setCategories(cats.data)
       })
       .catch(console.error)
       .finally(() => setLoading(false))

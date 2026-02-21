@@ -14,8 +14,11 @@ export default function MyLearningPage() {
 
   useEffect(() => {
     fetch('/api/enrollments')
-      .then(r => r.json())
-      .then(data => { if (Array.isArray(data)) setEnrollments(data) })
+      .then(async r => {
+        const data = await r.json().catch(() => null)
+        if (r.ok && Array.isArray(data)) setEnrollments(data)
+        return data
+      })
       .catch(console.error)
       .finally(() => setLoading(false))
   }, [])

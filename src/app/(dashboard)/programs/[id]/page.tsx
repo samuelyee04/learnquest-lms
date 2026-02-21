@@ -9,6 +9,7 @@ import DiscussionBoard from '@/components/discussion/DiscussionBoard'
 import AdminProgramEditor from '@/components/admin/AdminProgramEditor'
 import AdminStats from '@/components/admin/AdminStats'
 import AdminParticipants from '@/components/admin/AdminParticipants'
+import AdminQuizSection from '@/components/admin/AdminQuizSection'
 import Toast from '@/components/ui/Toast'
 
 type Tab = 'overview' | 'episodes' | 'quiz' | 'discussion' | 'manage' | 'stats'
@@ -35,14 +36,14 @@ export default function ProgramDetailPage() {
   const enrollment = program?.enrollment
   const isEnrolled = !!enrollment
   const isCompleted = enrollment?.completed ?? false
-  const cat = program?.category
+  const cat = program?.category ?? { name: 'Program', icon: '📚', color: '#4cc9f0', id: '' }
 
   useEffect(() => {
     if (!id) return
     fetch(`/api/programs/${id}`)
-      .then(r => r.json())
-      .then(data => {
-        if (data.error) return
+      .then(async r => {
+        const data = await r.json().catch(() => ({}))
+        if (!r.ok || data.error) return
         setProgram(data)
         if (data.quizzes?.[0]) setQuiz(data.quizzes[0])
       })
@@ -117,7 +118,7 @@ export default function ProgramDetailPage() {
     )
   }
 
-  if (!program || !cat) {
+  if (!program) {
     return (
       <div className="min-h-screen bg-[#06060f] flex flex-col items-center justify-center gap-4">
         <div className="text-5xl">🔍</div>
@@ -268,25 +269,40 @@ export default function ProgramDetailPage() {
               </div>
             )}
 
-            <div className="flex gap-3">
+            <div className="flex flex-wrap gap-3 items-center">
               {!isEnrolled ? (
                 <button
                   onClick={handleEnroll}
                   disabled={enrolling}
-                  className="flex-1 py-4 rounded-xl font-mono font-bold text-sm uppercase tracking-widest text-[#0a0a14] hover:opacity-90 active:scale-95 transition-all disabled:opacity-50"
+                  className="flex-1 py-4 rounded-xl font-mono font-bold text-sm uppercase tracking-widest text-[#0a0a14] hover:opacity-90 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   style={{ background: `linear-gradient(135deg, ${cat.color}, #4cc9f0)` }}
                 >
                   {enrolling ? 'Enrolling...' : 'Enroll Now — Free'}
                 </button>
-              ) : !isCompleted ? (
-                <button
-                  onClick={handleLeave}
-                  disabled={leaving}
-                  className="px-6 py-3 rounded-xl font-mono font-bold text-xs uppercase tracking-widest text-white/40 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 transition-all disabled:opacity-40"
-                >
-                  {leaving ? '...' : 'Leave Program'}
-                </button>
-              ) : null}
+              ) : (
+                <>
+                  <button
+                    disabled
+                    className="flex-1 py-4 rounded-xl font-mono font-bold text-sm uppercase tracking-widest transition-all cursor-not-allowed opacity-90"
+                    style={{
+                      background: 'rgba(255,255,255,0.08)',
+                      color: 'rgba(255,255,255,0.5)',
+                      border: '1px solid rgba(255,255,255,0.12)',
+                    }}
+                  >
+                    ✓ Enrolled
+                  </button>
+                  {!isCompleted && (
+                    <button
+                      onClick={handleLeave}
+                      disabled={leaving}
+                      className="px-6 py-3 rounded-xl font-mono font-bold text-xs uppercase tracking-widest text-white/40 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 transition-all disabled:opacity-40"
+                    >
+                      {leaving ? '...' : 'Leave Program'}
+                    </button>
+                  )}
+                </>
+              )}
             </div>
           </div>
         )}
@@ -328,19 +344,41 @@ export default function ProgramDetailPage() {
         )}
 
         {tab === 'quiz' && (
-          <div>
-            {!quiz ? (
-              <div className="text-center py-16 text-white/30 font-mono text-sm">
-                <div className="text-4xl mb-4">🧠</div>
-                <p>No quiz available for this program yet.</p>
-              </div>
-            ) : quiz.questions?.length === 0 ? (
-              <div className="text-center py-16 text-white/30 font-mono text-sm">
-                No quiz questions added yet.
-              </div>
-            ) : (
-              <QuizEngine quiz={quiz} catColor={cat.color} onComplete={handleQuizComplete} />
+          <div className="space-y-8">
+            {isAdmin && (
+              <AdminQuizSection
+                programId={id!}
+                existingQuiz={program.quizzes?.[0] ?? null}
+                catColor={cat.color}
+                onUpdate={() => {
+                  fetch(`/api/programs/${id}`)
+                    .then(r => r.json())
+                    .then(data => {
+                      if (!data.error) {
+                        setProgram(data)
+                        if (data.quizzes?.[0]) setQuiz(data.quizzes[0])
+                      }
+                    })
+                    .catch(console.error)
+                }}
+              />
             )}
+            <div>
+              {!quiz ? (
+                <div className="text-center py-16 text-white/30 font-mono text-sm">
+                  <div className="text-4xl mb-4">🧠</div>
+                  <p>No quiz available for this program yet.</p>
+                  {isAdmin && <p className="mt-2 text-white/50">Add a question above to create the quiz.</p>}
+                </div>
+              ) : quiz.questions?.length === 0 ? (
+                <div className="text-center py-16 text-white/30 font-mono text-sm">
+                  No quiz questions added yet.
+                  {isAdmin && <p className="mt-2 text-white/50">Add a question above.</p>}
+                </div>
+              ) : (
+                <QuizEngine quiz={quiz} catColor={cat.color} onComplete={handleQuizComplete} />
+              )}
+            </div>
           </div>
         )}
 

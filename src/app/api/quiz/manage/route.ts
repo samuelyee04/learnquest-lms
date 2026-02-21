@@ -33,11 +33,45 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json()
-    const { programId, questions } = body
+    const { programId, questions, quizId, text, options, answer, order } = body
 
+    // Add single question to existing quiz
+    if (quizId != null) {
+      if (!text || typeof text !== 'string' || !text.trim()) {
+        return NextResponse.json(
+          { error: 'Question text is required' },
+          { status: 400 }
+        )
+      }
+      if (!Array.isArray(options) || options.length < 2) {
+        return NextResponse.json(
+          { error: 'At least 2 options are required' },
+          { status: 400 }
+        )
+      }
+      const opts = options.map((o: any) => typeof o === 'string' ? o : String(o))
+      const ans = typeof answer === 'number' ? answer : parseInt(answer, 10)
+      if (Number.isNaN(ans) || ans < 0 || ans >= opts.length) {
+        return NextResponse.json(
+          { error: 'Valid answer index (0 to options.length-1) is required' },
+          { status: 400 }
+        )
+      }
+      const quiz = await prisma.quiz.findUnique({ where: { id: quizId } })
+      if (!quiz) {
+        return NextResponse.json({ error: 'Quiz not found' }, { status: 404 })
+      }
+      const nextOrder = typeof order === 'number' ? order : (await prisma.question.count({ where: { quizId } }))
+      const question = await prisma.question.create({
+        data: { quizId, text: text.trim(), options: opts, answer: ans, order: nextOrder },
+      })
+      return NextResponse.json(question, { status: 201 })
+    }
+
+    // Create new quiz with questions
     if (!programId) {
       return NextResponse.json(
-        { error: 'programId is required' },
+        { error: 'programId or quizId is required' },
         { status: 400 }
       )
     }

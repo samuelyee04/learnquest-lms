@@ -36,12 +36,13 @@ export default function ExplorePage() {
       ])
 
       const [progData, catData] = await Promise.all([
-        progRes.json(),
-        catRes.json(),
+        progRes.json().catch(() => null),
+        catRes.json().catch(() => null),
       ])
 
-      setPrograms(Array.isArray(progData) ? progData : [])
-      setCategories(Array.isArray(catData) ? catData : [])
+      if (progRes.ok && Array.isArray(progData)) setPrograms(progData)
+      else if (!progRes.ok) setPrograms([])
+      if (catRes.ok && Array.isArray(catData)) setCategories(catData)
     } catch (err) {
       console.error('[EXPLORE_FETCH]', err)
     } finally {

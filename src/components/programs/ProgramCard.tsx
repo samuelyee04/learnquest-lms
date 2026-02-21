@@ -118,20 +118,22 @@ export default function ProgramCard({ program, onEnroll }: Props) {
           </div>
         )}
 
-        {/* Enroll / Continue button */}
+        {/* Enroll / Enrolled button — when enrolled, disabled and grey; card click opens program */}
         <button
           onClick={handleEnroll}
-          disabled={loading}
+          disabled={loading || isEnrolled}
           className={`w-full py-3 rounded-xl text-xs font-bold font-mono uppercase tracking-widest transition-all duration-200 ${
             isCompleted
               ? 'bg-white/5 text-white/30 cursor-default'
               : isEnrolled
-              ? 'bg-white/5 text-white/50 hover:bg-white/10 border border-white/10'
+              ? 'bg-white/5 text-white/40 border border-white/10 cursor-not-allowed'
               : 'text-[#0a0a14] shadow-lg hover:opacity-90 active:scale-95'
           }`}
           style={
             !isCompleted && !isEnrolled
               ? { background: `linear-gradient(135deg, ${cat.color}, ${cat.color}cc)` }
+              : isEnrolled
+              ? { background: 'rgba(255,255,255,0.06)' }
               : {}
           }
         >
@@ -140,7 +142,7 @@ export default function ProgramCard({ program, onEnroll }: Props) {
             : isCompleted
             ? '✅ Completed'
             : isEnrolled
-            ? '📖 Continue'
+            ? '✓ Enrolled'
             : '⚡ Enroll Now'}
         </button>
       </div>
