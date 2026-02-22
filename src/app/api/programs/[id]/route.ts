@@ -12,19 +12,10 @@ import { NextResponse } from 'next/server'
 // ─────────────────────────────────────────────────────────────
 export async function GET(
   req: Request,
-  context: { params: Promise<{ id: string }> | { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const params = context?.params
-    if (!params) {
-      return NextResponse.json(
-        { error: 'Invalid request' },
-        { status: 400 }
-      )
-    }
-    const { id } = typeof (params as Promise<{ id: string }>)?.then === 'function'
-      ? await (params as Promise<{ id: string }>)
-      : (params as { id: string })
+    const { id } = await params
     if (!id || typeof id !== 'string') {
       return NextResponse.json(
         { error: 'Invalid program ID' },
@@ -51,10 +42,10 @@ export async function GET(
             questions: {
               orderBy: { order: 'asc' },
               select: {
-                id:      true,
-                text:    true,
+                id: true,
+                text: true,
                 options: true,
-                order:   true,
+                order: true,
               },
             },
           },
@@ -83,12 +74,14 @@ export async function GET(
 
     // Attach the current user's enrollment if they are logged in
     let enrollment = null
+    let episodeProgress: string[] = []
+    let quizResults: { quizId: string; passed: boolean }[] = []
     if (session?.user?.id) {
       try {
         enrollment = await prisma.enrollment.findUnique({
           where: {
             userId_programId: {
-              userId:    session.user.id,
+              userId: session.user.id,
               programId: id,
             },
           },
@@ -96,12 +89,40 @@ export async function GET(
       } catch (enrollErr) {
         console.warn('[PROGRAM_GET_BY_ID] enrollment lookup failed:', enrollErr)
       }
+
+      // Get episode completion progress for this user
+      try {
+        const epIds = program.episodes.map(e => e.id)
+        if (epIds.length > 0) {
+          const completedEps = await prisma.episodeProgress.findMany({
+            where: { userId: session.user.id, episodeId: { in: epIds }, completed: true },
+            select: { episodeId: true },
+          })
+          episodeProgress = completedEps.map(ep => ep.episodeId)
+        }
+      } catch (epErr) {
+        console.warn('[PROGRAM_GET_BY_ID] episodeProgress lookup failed:', epErr)
+      }
+
+      // Get quiz results for this user
+      try {
+        const qIds = program.quizzes.map(q => q.id)
+        if (qIds.length > 0) {
+          const results = await prisma.quizResult.findMany({
+            where: { userId: session.user.id, quizId: { in: qIds } },
+            select: { quizId: true, passed: true },
+          })
+          quizResults = results
+        }
+      } catch (qrErr) {
+        console.warn('[PROGRAM_GET_BY_ID] quizResults lookup failed:', qrErr)
+      }
     }
 
     // Ensure JSON-serializable response (Dates → strings); avoid circular refs from Prisma
     let payload: object
     try {
-      payload = JSON.parse(JSON.stringify({ ...program, enrollment }))
+      payload = JSON.parse(JSON.stringify({ ...program, enrollment, episodeProgress, quizResults }))
     } catch (serializeErr) {
       console.error('[PROGRAM_GET_BY_ID] serialize failed', serializeErr)
       return NextResponse.json(
@@ -164,15 +185,15 @@ export async function PATCH(
     const program = await prisma.program.update({
       where: { id },
       data: {
-        ...(title        !== undefined && { title }),
-        ...(description  !== undefined && { description }),
-        ...(about        !== undefined && { about }),
-        ...(outcome      !== undefined && { outcome }),
-        ...(duration     !== undefined && { duration }),
-        ...(difficulty   !== undefined && { difficulty }),
+        ...(title !== undefined && { title }),
+        ...(description !== undefined && { description }),
+        ...(about !== undefined && { about }),
+        ...(outcome !== undefined && { outcome }),
+        ...(duration !== undefined && { duration }),
+        ...(difficulty !== undefined && { difficulty }),
         ...(rewardPoints !== undefined && { rewardPoints }),
         ...(videoUrlNormalized !== undefined && { videoUrl: videoUrlNormalized }),
-        ...(categoryId   !== undefined && { categoryId }),
+        ...(categoryId !== undefined && { categoryId }),
       },
       include: {
         category: true,

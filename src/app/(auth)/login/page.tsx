@@ -29,6 +29,7 @@ export default function LoginPage() {
             ? 'Invalid email or password. Please try again.'
             : 'Sign in failed. Please try again.'
         )
+        setSuccess(false)
         setLoading(false)
         return
       }
@@ -37,6 +38,7 @@ export default function LoginPage() {
       setTimeout(() => { window.location.href = '/explore' }, 800)
     } catch {
       setError('Something went wrong. Please try again.')
+      setSuccess(false)
       setLoading(false)
     }
   }

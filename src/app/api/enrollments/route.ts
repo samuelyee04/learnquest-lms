@@ -118,7 +118,7 @@ export async function PATCH(req: Request) {
     }
 
     const body = await req.json()
-    const { programId, progress, completed } = body
+    const { programId, progress, completed, claimXp } = body
 
     if (!programId) {
       return NextResponse.json(
@@ -144,6 +144,21 @@ export async function PATCH(req: Request) {
       )
     }
 
+    // Build update data
+    const updateData: any = {
+      ...(progress !== undefined && { progress }),
+      ...(completed !== undefined && { completed }),
+      // Set completedAt timestamp only when marking complete
+      ...(completed === true && !existing.completed && {
+        completedAt: new Date(),
+      }),
+    }
+
+    // Handle manual XP claim
+    if (claimXp === true && existing.completed && !existing.xpClaimed) {
+      updateData.xpClaimed = true
+    }
+
     // Update the enrollment record
     const enrollment = await prisma.enrollment.update({
       where: {
@@ -152,34 +167,29 @@ export async function PATCH(req: Request) {
           programId,
         },
       },
-      data: {
-        ...(progress  !== undefined && { progress }),
-        ...(completed !== undefined && { completed }),
-        // Set completedAt timestamp only when marking complete
-        ...(completed === true && !existing.completed && {
-          completedAt: new Date(),
-        }),
-      },
+      data: updateData,
     })
 
-    // Award XP points when program is newly completed
-    if (completed === true && !existing.completed) {
+    // Award XP points when manually claimed
+    let newXpPoints: number | null = null
+    if (claimXp === true && existing.completed && !existing.xpClaimed) {
       const program = await prisma.program.findUnique({
         where: { id: programId },
         select: { rewardPoints: true },
       })
 
       if (program) {
-        await prisma.user.update({
+        const updatedUser = await prisma.user.update({
           where: { id: session.user.id },
           data: {
             xpPoints: { increment: program.rewardPoints },
           },
         })
+        newXpPoints = updatedUser.xpPoints
       }
     }
 
-    return NextResponse.json(enrollment)
+    return NextResponse.json({ ...enrollment, newXpPoints })
   } catch (error) {
     console.error('[ENROLLMENTS_PATCH]', error)
     return NextResponse.json(

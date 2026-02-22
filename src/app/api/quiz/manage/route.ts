@@ -33,7 +33,7 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json()
-    const { programId, questions, quizId, text, options, answer, order } = body
+    const { programId, questions, quizId, text, options, answer, order, title } = body
 
     // Add single question to existing quiz
     if (quizId != null) {
@@ -110,12 +110,13 @@ export async function POST(req: Request) {
     const quiz = await prisma.quiz.create({
       data: {
         programId,
+        title: typeof title === 'string' && title.trim() ? title.trim() : 'Quiz',
         questions: {
           create: questions.map((q: any, index: number) => ({
-            text:    q.text,
+            text: q.text,
             options: q.options,
-            answer:  q.answer,
-            order:   q.order ?? index,
+            answer: q.answer,
+            order: q.order ?? index,
           })),
         },
       },
@@ -166,10 +167,10 @@ export async function PATCH(req: Request) {
     const question = await prisma.question.update({
       where: { id: questionId },
       data: {
-        ...(text    !== undefined && { text }),
+        ...(text !== undefined && { text }),
         ...(options !== undefined && { options }),
-        ...(answer  !== undefined && { answer }),
-        ...(order   !== undefined && { order }),
+        ...(answer !== undefined && { answer }),
+        ...(order !== undefined && { order }),
       },
     })
 

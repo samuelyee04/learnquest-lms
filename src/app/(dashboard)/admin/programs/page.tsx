@@ -8,19 +8,19 @@ import Toast from '@/components/ui/Toast'
 
 export default function AdminProgramsPage() {
   const { data: session } = useSession()
-  const [programs, setPrograms]     = useState<Program[]>([])
+  const [programs, setPrograms] = useState<Program[]>([])
   const [categories, setCategories] = useState<Category[]>([])
-  const [loading, setLoading]       = useState(true)
-  const [editing, setEditing]       = useState<Program | null>(null)
-  const [creating, setCreating]     = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [editing, setEditing] = useState<Program | null>(null)
+  const [creating, setCreating] = useState(false)
   const [creatingSubmitting, setCreatingSubmitting] = useState(false)
-  const [toast, setToast]           = useState<string | null>(null)
-  const [deleting, setDeleting]     = useState<string | null>(null)
+  const [toast, setToast] = useState<string | null>(null)
+  const [deleting, setDeleting] = useState<string | null>(null)
 
   const [newForm, setNewForm] = useState({
     title: '', description: '', about: '', outcome: '',
     duration: '', difficulty: 'BEGINNER', rewardPoints: 100,
-    videoUrl: '', categoryId: '',
+    categoryId: '',
   })
 
   useEffect(() => {
@@ -50,7 +50,6 @@ export default function AdminProgramsPage() {
         body: JSON.stringify({
           ...newForm,
           rewardPoints: Number(newForm.rewardPoints),
-          videoUrl: newForm.videoUrl || null,
         }),
       })
       if (!res.ok) {
@@ -60,7 +59,7 @@ export default function AdminProgramsPage() {
       const created = await res.json()
       setPrograms(prev => [created, ...prev])
       setCreating(false)
-      setNewForm({ title: '', description: '', about: '', outcome: '', duration: '', difficulty: 'BEGINNER', rewardPoints: 100, videoUrl: '', categoryId: '' })
+      setNewForm({ title: '', description: '', about: '', outcome: '', duration: '', difficulty: 'BEGINNER', rewardPoints: 100, categoryId: '' })
       setToast('Program created successfully!')
     } catch (e) {
       setToast(e instanceof Error ? e.message : 'Failed to create program')
@@ -164,7 +163,7 @@ export default function AdminProgramsPage() {
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm font-mono outline-none placeholder:text-white/25 resize-none"
               />
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               <input
                 value={newForm.duration}
                 onChange={e => setNewForm(f => ({ ...f, duration: e.target.value }))}
@@ -174,36 +173,33 @@ export default function AdminProgramsPage() {
               <select
                 value={newForm.difficulty}
                 onChange={e => setNewForm(f => ({ ...f, difficulty: e.target.value }))}
-                className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm font-mono outline-none"
+                className="bg-[#0f0f1e] border border-white/10 rounded-xl px-4 py-3 text-white text-sm font-mono outline-none"
               >
-                <option value="BEGINNER">Beginner</option>
-                <option value="INTERMEDIATE">Intermediate</option>
-                <option value="ADVANCED">Advanced</option>
+                <option value="BEGINNER" className="bg-[#0f0f1e] text-white">Beginner</option>
+                <option value="INTERMEDIATE" className="bg-[#0f0f1e] text-white">Intermediate</option>
+                <option value="ADVANCED" className="bg-[#0f0f1e] text-white">Advanced</option>
               </select>
+              <select
+                value={newForm.categoryId}
+                onChange={e => setNewForm(f => ({ ...f, categoryId: e.target.value }))}
+                className="bg-[#0f0f1e] border border-white/10 rounded-xl px-4 py-3 text-white text-sm font-mono outline-none"
+              >
+                <option value="" className="bg-[#0f0f1e] text-white">Category *</option>
+                {categories.map(c => (
+                  <option key={c.id} value={c.id} className="bg-[#0f0f1e] text-white">{c.icon} {c.name}</option>
+                ))}
+              </select>
+            </div>
+            <div>
               <input
                 type="number"
                 value={newForm.rewardPoints}
                 onChange={e => setNewForm(f => ({ ...f, rewardPoints: Number(e.target.value) }))}
                 placeholder="XP reward"
-                className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm font-mono outline-none placeholder:text-white/25"
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm font-mono outline-none placeholder:text-white/25"
               />
-              <select
-                value={newForm.categoryId}
-                onChange={e => setNewForm(f => ({ ...f, categoryId: e.target.value }))}
-                className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm font-mono outline-none"
-              >
-                <option value="">Category *</option>
-                {categories.map(c => (
-                  <option key={c.id} value={c.id}>{c.icon} {c.name}</option>
-                ))}
-              </select>
+              <p className="text-white/35 text-xs font-mono mt-1">XP points awarded to users upon program completion</p>
             </div>
-            <input
-              value={newForm.videoUrl}
-              onChange={e => setNewForm(f => ({ ...f, videoUrl: e.target.value }))}
-              placeholder="Video URL (any YouTube link: watch or embed)"
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm font-mono outline-none placeholder:text-white/25"
-            />
             <button
               onClick={handleCreate}
               disabled={creatingSubmitting}

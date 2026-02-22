@@ -113,14 +113,14 @@ export async function POST(req: Request) {
       if (isCorrect) score++
       return {
         questionId: question.id,
-        question:   question.text,
-        selected:   answers[index],
-        correct:    question.answer,
+        question: question.text,
+        selected: answers[index],
+        correct: question.answer,
         isCorrect,
       }
     })
 
-    const total  = quiz.questions.length
+    const total = quiz.questions.length
     const passed = score === total // Must get 100% to pass
 
     // Save the result to database
@@ -134,7 +134,7 @@ export async function POST(req: Request) {
       },
     })
 
-    // If passed, update enrollment progress to 100% and mark complete
+    // If passed, update enrollment progress and mark complete (but do NOT auto-award XP — user must claim manually)
     if (passed) {
       const quizWithProgram = await prisma.quiz.findUnique({
         where: { id: quizId },
@@ -152,7 +152,28 @@ export async function POST(req: Request) {
         })
 
         if (existingEnrollment && !existingEnrollment.completed) {
-          // Mark enrollment as complete
+          // Recalculate progress
+          const totalEpisodes = await prisma.episode.count({ where: { programId: quizWithProgram.programId } })
+          const completedEpisodes = await prisma.episodeProgress.count({
+            where: {
+              userId: session.user.id,
+              completed: true,
+              episode: { programId: quizWithProgram.programId },
+            },
+          })
+          const totalQuizzes = await prisma.quiz.count({ where: { programId: quizWithProgram.programId } })
+          const passedQuizzes = await prisma.quizResult.count({
+            where: {
+              userId: session.user.id,
+              passed: true,
+              quiz: { programId: quizWithProgram.programId },
+            },
+          })
+          const totalItems = totalEpisodes + totalQuizzes
+          const completedItems = completedEpisodes + Math.min(passedQuizzes, totalQuizzes)
+          const progressPct = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0
+          const allComplete = progressPct >= 100
+
           await prisma.enrollment.update({
             where: {
               userId_programId: {
@@ -161,26 +182,11 @@ export async function POST(req: Request) {
               },
             },
             data: {
-              progress:    100,
-              completed:   true,
-              completedAt: new Date(),
+              progress: progressPct,
+              completed: allComplete,
+              ...(allComplete && !existingEnrollment.completed && { completedAt: new Date() }),
             },
           })
-
-          // Award XP points
-          const program = await prisma.program.findUnique({
-            where: { id: quizWithProgram.programId },
-            select: { rewardPoints: true },
-          })
-
-          if (program) {
-            await prisma.user.update({
-              where: { id: session.user.id },
-              data: {
-                xpPoints: { increment: program.rewardPoints },
-              },
-            })
-          }
         }
       }
     }

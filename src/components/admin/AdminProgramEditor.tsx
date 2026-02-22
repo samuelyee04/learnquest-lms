@@ -5,25 +5,24 @@ import { useState } from 'react'
 import { Program } from '@/types'
 
 interface Props {
-  program:   Program
-  catColor:  string
-  onSaved:   (updated: Partial<Program>) => void
-  onCancel:  () => void
+  program: Program
+  catColor: string
+  onSaved: (updated: Partial<Program>) => void
+  onCancel: () => void
 }
 
 export default function AdminProgramEditor({ program, catColor, onSaved, onCancel }: Props) {
   const [form, setForm] = useState({
-    title:        program.title,
-    description:  program.description,
-    about:        program.about,
-    outcome:      program.outcome,
-    duration:     program.duration,
-    difficulty:   program.difficulty,
+    title: program.title,
+    description: program.description,
+    about: program.about,
+    outcome: program.outcome,
+    duration: program.duration,
+    difficulty: program.difficulty,
     rewardPoints: program.rewardPoints,
-    videoUrl:     program.videoUrl ?? '',
   })
   const [saving, setSaving] = useState(false)
-  const [error,  setError]  = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
   const handleSave = async () => {
     setSaving(true)
@@ -35,7 +34,6 @@ export default function AdminProgramEditor({ program, catColor, onSaved, onCance
         body: JSON.stringify({
           ...form,
           rewardPoints: Number(form.rewardPoints),
-          videoUrl: form.videoUrl || null,
         }),
       })
       if (!res.ok) throw new Error('Failed to save')
@@ -56,7 +54,7 @@ export default function AdminProgramEditor({ program, catColor, onSaved, onCance
   ) => (
     <div>
       <label className="block text-xs font-mono font-bold uppercase tracking-widest mb-2"
-             style={{ color: catColor }}>
+        style={{ color: catColor }}>
         {label}
       </label>
       {type === 'textarea' ? (
@@ -91,27 +89,27 @@ export default function AdminProgramEditor({ program, catColor, onSaved, onCance
 
       <div className="grid grid-cols-2 gap-4">
         {field('Duration', 'duration', 'input', 'e.g. 8 weeks')}
-        {field('Reward XP', 'rewardPoints', 'input')}
+        <div>
+          {field('Reward XP', 'rewardPoints', 'input')}
+          <p className="text-white/35 text-xs font-mono mt-1">XP points awarded to users upon completion</p>
+        </div>
       </div>
 
       <div>
         <label className="block text-xs font-mono font-bold uppercase tracking-widest mb-2"
-               style={{ color: catColor }}>
+          style={{ color: catColor }}>
           Difficulty
         </label>
         <select
           value={form.difficulty}
           onChange={e => setForm(f => ({ ...f, difficulty: e.target.value as any }))}
-          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-xs font-mono outline-none"
+          className="w-full bg-[#0f0f1e] border border-white/10 rounded-xl px-4 py-3 text-white text-xs font-mono outline-none"
         >
-          <option value="BEGINNER">Beginner</option>
-          <option value="INTERMEDIATE">Intermediate</option>
-          <option value="ADVANCED">Advanced</option>
+          <option value="BEGINNER" className="bg-[#0f0f1e] text-white">Beginner</option>
+          <option value="INTERMEDIATE" className="bg-[#0f0f1e] text-white">Intermediate</option>
+          <option value="ADVANCED" className="bg-[#0f0f1e] text-white">Advanced</option>
         </select>
       </div>
-
-      {field('Video URL (YouTube Embed)', 'videoUrl', 'input', 'Paste any YouTube URL (watch or embed)')}
-
       {error && (
         <p className="text-red-400 font-mono text-xs">{error}</p>
       )}

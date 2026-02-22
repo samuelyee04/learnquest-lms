@@ -24,24 +24,45 @@ export default function ProgramDetailPage() {
   const params = useParams()
   const id = typeof params?.id === 'string' ? params.id : Array.isArray(params?.id) ? params.id[0] : undefined
   const router = useRouter()
-  const { data: session } = useSession()
+  const { data: session, update: updateSession } = useSession()
 
-  const [program, setProgram] = useState<(Program & { episodes?: any[]; quizzes?: any[] }) | null>(null)
+  const [program, setProgram] = useState<(Program & { episodes?: any[]; quizzes?: any[]; episodeProgress?: string[]; quizResults?: { quizId: string; passed: boolean }[] }) | null>(null)
   const [loading, setLoading] = useState(true)
   const [fetchError, setFetchError] = useState<string | null>(null)
-  const [tab, setTab]           = useState<Tab>('overview')
+  const [tab, setTab] = useState<Tab>('overview')
   const [selectedQuiz, setSelectedQuiz] = useState<any>(null)
   const [selectedEpisode, setSelectedEpisode] = useState<any | null>(null)
-  const [toast, setToast]       = useState<string | null>(null)
+  const [toast, setToast] = useState<string | null>(null)
   const [enrolling, setEnrolling] = useState(false)
   const [editing, setEditing] = useState(false)
   const [leaving, setLeaving] = useState(false)
+  const [claimingXp, setClaimingXp] = useState(false)
 
-  const isAdmin    = session?.user?.role === 'ADMIN'
+  const isAdmin = session?.user?.role === 'ADMIN'
   const enrollment = program?.enrollment
   const isEnrolled = !!enrollment
   const isCompleted = enrollment?.completed ?? false
+  const xpClaimed = enrollment?.xpClaimed ?? false
   const cat = program?.category ?? { name: 'Program', icon: '📚', color: '#4cc9f0', id: '' }
+
+  // Completion stats
+  const totalEpisodes = program?.episodes?.length ?? 0
+  const completedEpisodes = program?.episodeProgress?.length ?? 0
+  const totalQuizzes = program?.quizzes?.length ?? 0
+  const passedQuizzes = program?.quizResults?.filter(r => r.passed)?.length ?? 0
+  const uniquePassedQuizzes = program?.quizResults
+    ? [...new Set(program.quizResults.filter(r => r.passed).map(r => r.quizId))].length
+    : 0
+
+  const refreshProgram = () => {
+    if (!id) return
+    fetch(`/api/programs/${encodeURIComponent(id)}`)
+      .then(async r => {
+        const data = await r.json().catch(() => ({}))
+        if (!data.error && data.id) setProgram(data)
+      })
+      .catch(console.error)
+  }
 
   useEffect(() => {
     if (!id) {
@@ -113,14 +134,62 @@ export default function ProgramDetailPage() {
   }
 
   const handleQuizComplete = () => {
-    setToast('Program completed! Claiming rewards...')
-    fetch('/api/enrollments', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ programId: id, progress: 100, completed: true }),
-    }).then(() => {
-      setProgram(p => p ? { ...p, enrollment: { ...p.enrollment!, progress: 100, completed: true } } : p)
-    })
+    setToast('Quiz passed! Your progress has been updated.')
+    refreshProgram()
+  }
+
+  const handleEpisodeComplete = async (episodeId: string) => {
+    try {
+      const res = await fetch('/api/episodes', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ episodeId }),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setProgram(p => {
+          if (!p) return p
+          const newProgress = [...(p.episodeProgress ?? [])]
+          if (!newProgress.includes(episodeId)) newProgress.push(episodeId)
+          return {
+            ...p,
+            episodeProgress: newProgress,
+            enrollment: p.enrollment ? { ...p.enrollment, progress: data.enrollmentProgress } : p.enrollment,
+          }
+        })
+        setToast('Episode marked as complete! ✅')
+      }
+    } catch {
+      setToast('Failed to mark episode as complete')
+    }
+  }
+
+  const handleClaimXp = async () => {
+    if (claimingXp || xpClaimed || !isCompleted) return
+    setClaimingXp(true)
+    try {
+      const res = await fetch('/api/enrollments', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ programId: id, claimXp: true }),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setProgram(p => p ? {
+          ...p,
+          enrollment: p.enrollment ? { ...p.enrollment, xpClaimed: true } : p.enrollment,
+        } : p)
+        setToast(`+${program?.rewardPoints ?? 0} XP claimed successfully! 🎉`)
+        // Update session to reflect new XP
+        if (data.newXpPoints !== null) {
+          await updateSession()
+        }
+      }
+    } catch {
+      setToast('Failed to claim XP')
+    } finally {
+      setClaimingXp(false)
+    }
   }
 
   const handleDownloadCertificate = () => {
@@ -163,13 +232,13 @@ export default function ProgramDetailPage() {
 
   const canAccessLocked = isEnrolled || isAdmin
   const tabs: { id: Tab; label: string }[] = [
-    { id: 'overview',   label: 'Overview' },
-    { id: 'episodes',   label: 'Episodes' },
-    { id: 'quiz',       label: 'Quiz' },
+    { id: 'overview', label: 'Overview' },
+    { id: 'episodes', label: 'Episodes' },
+    { id: 'quiz', label: 'Quiz' },
     { id: 'discussion', label: 'Discussion' },
     ...(isAdmin ? [
       { id: 'manage' as Tab, label: 'Manage' },
-      { id: 'stats' as Tab,  label: 'Stats' },
+      { id: 'stats' as Tab, label: 'Stats' },
     ] : []),
   ]
 
@@ -232,11 +301,10 @@ export default function ProgramDetailPage() {
               <button
                 key={t.id}
                 onClick={() => setTab(t.id)}
-                className={`px-4 py-2.5 text-xs font-mono font-bold uppercase tracking-widest rounded-t-lg transition-all ${
-                  tab === t.id
-                    ? 'bg-white/5 border border-white/10 border-b-transparent -mb-px'
-                    : 'text-white/30 hover:text-white/60'
-                }`}
+                className={`px-4 py-2.5 text-xs font-mono font-bold uppercase tracking-widest rounded-t-lg transition-all ${tab === t.id
+                  ? 'bg-white/5 border border-white/10 border-b-transparent -mb-px'
+                  : 'text-white/30 hover:text-white/60'
+                  }`}
                 style={tab === t.id ? { color: cat.color } : {}}
               >
                 {t.label}
@@ -273,6 +341,27 @@ export default function ProgramDetailPage() {
                 <div className="h-2 bg-white/8 rounded-full overflow-hidden">
                   <div className="h-full rounded-full transition-all duration-700" style={{ width: `${enrollment?.progress ?? 0}%`, background: `linear-gradient(90deg, ${cat.color}, #4cc9f0)` }} />
                 </div>
+
+                {/* Completion stats */}
+                <div className="flex flex-wrap gap-4 mt-3">
+                  {totalEpisodes > 0 && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-mono text-white/40">🎬 Episodes:</span>
+                      <span className="text-xs font-mono font-bold" style={{ color: cat.color }}>
+                        {completedEpisodes}/{totalEpisodes} ({totalEpisodes > 0 ? Math.round((completedEpisodes / totalEpisodes) * 100) : 0}%)
+                      </span>
+                    </div>
+                  )}
+                  {totalQuizzes > 0 && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-mono text-white/40">🧠 Quizzes:</span>
+                      <span className="text-xs font-mono font-bold" style={{ color: cat.color }}>
+                        {uniquePassedQuizzes}/{totalQuizzes} ({totalQuizzes > 0 ? Math.round((uniquePassedQuizzes / totalQuizzes) * 100) : 0}%)
+                      </span>
+                    </div>
+                  )}
+                </div>
+
                 <div className="flex flex-wrap gap-3 mt-4">
                   <button
                     onClick={isCompleted ? handleDownloadCertificate : undefined}
@@ -288,21 +377,33 @@ export default function ProgramDetailPage() {
                     📄 Download Certificate
                   </button>
                   <button
-                    onClick={isCompleted ? () => setToast(`+${program.rewardPoints} XP awarded on completion!`) : undefined}
-                    disabled={!isCompleted}
-                    title={isCompleted ? `Claim +${program.rewardPoints} XP` : 'Complete the program to claim'}
+                    onClick={isCompleted && !xpClaimed ? handleClaimXp : undefined}
+                    disabled={!isCompleted || xpClaimed || claimingXp}
+                    title={
+                      xpClaimed
+                        ? 'XP already claimed'
+                        : isCompleted
+                          ? `Claim +${program.rewardPoints} XP`
+                          : 'Complete the program to claim'
+                    }
                     className="flex-1 min-w-[180px] py-3 rounded-xl font-mono font-bold text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2 disabled:cursor-not-allowed"
                     style={
-                      isCompleted
-                        ? { background: 'linear-gradient(135deg, #00f5d4, #4cc9f0)', color: '#0a0a14' }
-                        : { background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.4)' }
+                      xpClaimed
+                        ? { background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.4)' }
+                        : isCompleted
+                          ? { background: 'linear-gradient(135deg, #00f5d4, #4cc9f0)', color: '#0a0a14' }
+                          : { background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.4)' }
                     }
                   >
-                    ⚡ Claim +{program.rewardPoints} XP
+                    {claimingXp
+                      ? 'Claiming...'
+                      : xpClaimed
+                        ? '✓ XP Claimed'
+                        : `⚡ Claim +${program.rewardPoints} XP`}
                   </button>
                 </div>
                 {!isCompleted && (
-                  <p className="text-white/35 font-mono text-xs mt-2">Complete all steps to unlock certificate and claim XP.</p>
+                  <p className="text-white/35 font-mono text-xs mt-2">Complete all episodes and quizzes to unlock certificate and claim XP.</p>
                 )}
               </div>
             )}
@@ -378,12 +479,7 @@ export default function ProgramDetailPage() {
                     programId={id!}
                     existingEpisodes={program.episodes ?? []}
                     catColor={cat.color}
-                    onUpdate={() => {
-                      fetch(`/api/programs/${id}`)
-                        .then(r => r.json())
-                        .then(data => { if (!data.error) setProgram(data) })
-                        .catch(console.error)
-                    }}
+                    onUpdate={refreshProgram}
                   />
                 )}
                 {(!program.episodes || program.episodes.length === 0) && !isAdmin ? (
@@ -393,53 +489,88 @@ export default function ProgramDetailPage() {
                   </div>
                 ) : (program.episodes?.length ?? 0) > 0 ? (
                   <>
-                {selectedEpisode && (() => {
-                  const embedUrl = toYouTubeEmbedUrl(selectedEpisode.videoUrl)
-                  return embedUrl ? (
-                    <div className="rounded-xl overflow-hidden aspect-video bg-black border border-white/10">
-                      <iframe
-                        src={embedUrl}
-                        title={selectedEpisode.title}
-                        className="w-full h-full border-none"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
-                      />
-                      <div className="flex items-center justify-between p-3 bg-white/5 border-t border-white/10">
-                        <p className="font-mono font-bold text-white text-sm">{selectedEpisode.title}</p>
-                        <button
-                          onClick={() => setSelectedEpisode(null)}
-                          className="text-white/50 hover:text-white font-mono text-xs"
-                        >
-                          Close
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="rounded-xl p-4 bg-white/5 border border-white/10 flex items-center justify-between">
-                      <p className="font-mono text-white/60 text-sm">{selectedEpisode.title} — no video</p>
-                      <button onClick={() => setSelectedEpisode(null)} className="text-white/50 hover:text-white text-xs font-mono">Close</button>
-                    </div>
-                  )
-                })()}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {program.episodes.map((ep: any, i: number) => (
-                    <button
-                      key={ep.id}
-                      type="button"
-                      onClick={() => setSelectedEpisode(ep)}
-                      className="text-left p-4 rounded-xl bg-white/4 border border-white/6 hover:bg-white/6 hover:border-white/10 transition-all"
-                    >
-                      <div className="flex items-center gap-3 mb-2">
-                        <div className="w-10 h-10 rounded-lg flex items-center justify-center text-sm font-mono font-bold" style={{ background: `${cat.color}20`, color: cat.color }}>
-                          {i + 1}
+                    {selectedEpisode && (() => {
+                      const embedUrl = toYouTubeEmbedUrl(selectedEpisode.videoUrl)
+                      return embedUrl ? (
+                        <div className="rounded-xl overflow-hidden aspect-video bg-black border border-white/10">
+                          <iframe
+                            src={embedUrl}
+                            title={selectedEpisode.title}
+                            className="w-full h-full border-none"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                          />
+                          <div className="flex items-center justify-between p-3 bg-white/5 border-t border-white/10">
+                            <p className="font-mono font-bold text-white text-sm">{selectedEpisode.title}</p>
+                            <div className="flex items-center gap-3">
+                              {isEnrolled && !program.episodeProgress?.includes(selectedEpisode.id) && (
+                                <button
+                                  onClick={() => handleEpisodeComplete(selectedEpisode.id)}
+                                  className="text-xs font-mono font-bold px-3 py-1 rounded-lg hover:opacity-90 transition-all"
+                                  style={{ background: `${cat.color}22`, border: `1px solid ${cat.color}44`, color: cat.color }}
+                                >
+                                  ✓ Mark Complete
+                                </button>
+                              )}
+                              {program.episodeProgress?.includes(selectedEpisode.id) && (
+                                <span className="text-xs font-mono text-green-400 font-bold">✅ Completed</span>
+                              )}
+                              <button
+                                onClick={() => setSelectedEpisode(null)}
+                                className="text-white/50 hover:text-white font-mono text-xs"
+                              >
+                                Close
+                              </button>
+                            </div>
+                          </div>
                         </div>
-                        <span className="font-mono font-bold text-white text-sm line-clamp-1">{ep.title}</span>
-                      </div>
-                      {ep.duration && <p className="font-mono text-white/35 text-xs">{ep.duration}</p>}
-                      <span className="mt-2 inline-block text-xs font-mono" style={{ color: cat.color }}>▶ Watch</span>
-                    </button>
-                  ))}
-                </div>
+                      ) : (
+                        <div className="rounded-xl p-4 bg-white/5 border border-white/10 flex items-center justify-between">
+                          <p className="font-mono text-white/60 text-sm">{selectedEpisode.title} — no video</p>
+                          <div className="flex items-center gap-3">
+                            {isEnrolled && !program.episodeProgress?.includes(selectedEpisode.id) && (
+                              <button
+                                onClick={() => handleEpisodeComplete(selectedEpisode.id)}
+                                className="text-xs font-mono font-bold px-3 py-1 rounded-lg hover:opacity-90 transition-all"
+                                style={{ background: `${cat.color}22`, border: `1px solid ${cat.color}44`, color: cat.color }}
+                              >
+                                ✓ Mark Complete
+                              </button>
+                            )}
+                            {program.episodeProgress?.includes(selectedEpisode.id) && (
+                              <span className="text-xs font-mono text-green-400 font-bold">✅ Completed</span>
+                            )}
+                            <button onClick={() => setSelectedEpisode(null)} className="text-white/50 hover:text-white text-xs font-mono">Close</button>
+                          </div>
+                        </div>
+                      )
+                    })()}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {program.episodes!.map((ep: any, i: number) => {
+                        const isEpCompleted = program.episodeProgress?.includes(ep.id)
+                        return (
+                          <button
+                            key={ep.id}
+                            type="button"
+                            onClick={() => setSelectedEpisode(ep)}
+                            className="text-left p-4 rounded-xl bg-white/4 border border-white/6 hover:bg-white/6 hover:border-white/10 transition-all"
+                            style={isEpCompleted ? { border: `1px solid ${cat.color}40` } : {}}
+                          >
+                            <div className="flex items-center gap-3 mb-2">
+                              <div className="w-10 h-10 rounded-lg flex items-center justify-center text-sm font-mono font-bold" style={{ background: `${cat.color}20`, color: cat.color }}>
+                                {isEpCompleted ? '✅' : i + 1}
+                              </div>
+                              <span className="font-mono font-bold text-white text-sm line-clamp-1">{ep.title}</span>
+                            </div>
+                            {ep.duration && <p className="font-mono text-white/35 text-xs">{ep.duration}</p>}
+                            <div className="flex items-center justify-between mt-2">
+                              <span className="inline-block text-xs font-mono" style={{ color: cat.color }}>▶ Watch</span>
+                              {isEpCompleted && <span className="text-xs font-mono text-green-400/70">Completed</span>}
+                            </div>
+                          </button>
+                        )
+                      })}
+                    </div>
                   </>
                 ) : null}
               </div>
@@ -467,14 +598,9 @@ export default function ProgramDetailPage() {
                 {isAdmin && (
                   <AdminQuizSection
                     programId={id!}
-                    existingQuiz={program.quizzes?.[0] ?? null}
+                    existingQuizzes={program.quizzes ?? []}
                     catColor={cat.color}
-                    onUpdate={() => {
-                      fetch(`/api/programs/${id}`)
-                        .then(r => r.json())
-                        .then(data => { if (!data.error) setProgram(data) })
-                        .catch(console.error)
-                    }}
+                    onUpdate={refreshProgram}
                   />
                 )}
                 <div>
@@ -500,19 +626,28 @@ export default function ProgramDetailPage() {
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {program.quizzes.map((q: any, i: number) => (
-                        <button
-                          key={q.id}
-                          type="button"
-                          onClick={() => setSelectedQuiz(q)}
-                          className="text-left p-5 rounded-xl bg-white/4 border border-white/6 hover:bg-white/6 hover:border-white/10 transition-all"
-                        >
-                          <div className="text-2xl mb-2">🧠</div>
-                          <p className="font-mono font-bold text-white text-sm">Quiz {i + 1}</p>
-                          <p className="font-mono text-white/40 text-xs mt-1">{q.questions?.length ?? 0} questions</p>
-                          <span className="mt-2 inline-block text-xs font-mono" style={{ color: cat.color }}>Start →</span>
-                        </button>
-                      ))}
+                      {program.quizzes.map((q: any, i: number) => {
+                        const isQuizPassed = program.quizResults?.some(r => r.quizId === q.id && r.passed)
+                        return (
+                          <button
+                            key={q.id}
+                            type="button"
+                            onClick={() => setSelectedQuiz(q)}
+                            className="text-left p-5 rounded-xl bg-white/4 border border-white/6 hover:bg-white/6 hover:border-white/10 transition-all"
+                            style={isQuizPassed ? { border: `1px solid ${cat.color}40` } : {}}
+                          >
+                            <div className="text-2xl mb-2">{isQuizPassed ? '✅' : '🧠'}</div>
+                            <p className="font-mono font-bold text-white text-sm">{q.title || `Quiz ${i + 1}`}</p>
+                            <p className="font-mono text-white/40 text-xs mt-1">{q.questions?.length ?? 0} questions</p>
+                            <div className="flex items-center justify-between mt-2">
+                              <span className="inline-block text-xs font-mono" style={{ color: cat.color }}>
+                                {isQuizPassed ? 'Retake →' : 'Start →'}
+                              </span>
+                              {isQuizPassed && <span className="text-xs font-mono text-green-400/70">Passed</span>}
+                            </div>
+                          </button>
+                        )
+                      })}
                     </div>
                   )}
                 </div>
@@ -538,7 +673,7 @@ export default function ProgramDetailPage() {
               </div>
             ) : (
               <DiscussionBoard
-                programId={id}
+                programId={id!}
                 catColor={cat.color}
                 isAdmin={isAdmin}
               />
@@ -547,11 +682,11 @@ export default function ProgramDetailPage() {
         )}
 
         {tab === 'manage' && isAdmin && (
-          <AdminParticipants programId={id} catColor={cat.color} />
+          <AdminParticipants programId={id!} catColor={cat.color} />
         )}
 
         {tab === 'stats' && isAdmin && (
-          <AdminStats programId={id} catColor={cat.color} />
+          <AdminStats programId={id!} catColor={cat.color} />
         )}
       </div>
     </div>

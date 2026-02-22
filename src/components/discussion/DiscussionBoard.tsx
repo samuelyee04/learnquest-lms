@@ -7,23 +7,23 @@ import { getSocket } from '@/lib/socket'
 
 interface Props {
   programId: string
-  catColor:  string
-  isAdmin?:  boolean
+  catColor: string
+  isAdmin?: boolean
   onCleared?: () => void
 }
 
 const POLL_INTERVAL_MS = 4000
 
 export default function DiscussionBoard({ programId, catColor, isAdmin = false, onCleared }: Props) {
-  const { data: session }         = useSession()
-  const [messages, setMessages]   = useState<Discussion[]>([])
-  const [newMsg, setNewMsg]       = useState('')
-  const [loading, setLoading]     = useState(true)
-  const [sending, setSending]     = useState(false)
-  const [connected, setConnected]  = useState(false)
+  const { data: session } = useSession()
+  const [messages, setMessages] = useState<Discussion[]>([])
+  const [newMsg, setNewMsg] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [sending, setSending] = useState(false)
+  const [connected, setConnected] = useState(false)
   const [connectionAttempted, setConnectionAttempted] = useState(false)
-  const [clearing, setClearing]   = useState(false)
-  const bottomRef                  = useRef<HTMLDivElement>(null)
+  const [clearing, setClearing] = useState(false)
+  const bottomRef = useRef<HTMLDivElement>(null)
 
   const loadMessages = () =>
     fetch(`/api/discussion?programId=${programId}`)
@@ -60,7 +60,7 @@ export default function DiscussionBoard({ programId, catColor, isAdmin = false, 
         prev.map(m => m.id === messageId ? { ...m, likes: m.likes + 1 } : m)
       )
     })
-    socket.on('connect',    () => setConnected(true))
+    socket.on('connect', () => setConnected(true))
     socket.on('disconnect', () => setConnected(false))
 
     return () => {
@@ -89,9 +89,9 @@ export default function DiscussionBoard({ programId, catColor, isAdmin = false, 
     try {
       // 1. Save to database via API
       const res = await fetch('/api/discussion', {
-        method:  'POST',
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ programId, message: text }),
+        body: JSON.stringify({ programId, message: text }),
       })
       const saved: Discussion | { error: string } = await res.json()
 
@@ -136,12 +136,12 @@ export default function DiscussionBoard({ programId, catColor, isAdmin = false, 
   }
 
   const formatTime = (dateStr: string) => {
-    const diff  = Date.now() - new Date(dateStr).getTime()
-    const mins  = Math.floor(diff / 60000)
+    const diff = Date.now() - new Date(dateStr).getTime()
+    const mins = Math.floor(diff / 60000)
     const hours = Math.floor(mins / 60)
-    const days  = Math.floor(hours / 24)
-    if (mins < 1)   return 'just now'
-    if (mins < 60)  return `${mins}m ago`
+    const days = Math.floor(hours / 24)
+    if (mins < 1) return 'just now'
+    if (mins < 60) return `${mins}m ago`
     if (hours < 24) return `${hours}h ago`
     return `${days}d ago`
   }
@@ -153,11 +153,11 @@ export default function DiscussionBoard({ programId, catColor, isAdmin = false, 
       <div className="flex items-center justify-between gap-2 flex-wrap">
         <div className="flex items-center gap-2">
           <div
-            className={`w-2 h-2 rounded-full ${connected ? 'bg-green-400' : 'bg-amber-400/80'}`}
-            style={connected ? { boxShadow: '0 0 6px #4ade80' } : {}}
+            className={`w-2 h-2 rounded-full ${connected || !process.env.NEXT_PUBLIC_SOCKET_URL ? 'bg-green-400' : 'bg-amber-400/80'}`}
+            style={connected || !process.env.NEXT_PUBLIC_SOCKET_URL ? { boxShadow: '0 0 6px #4ade80' } : {}}
           />
           <span className="font-mono text-xs text-white/30">
-            {connected ? 'Live' : connectionAttempted ? 'Offline — updates every few seconds' : 'Connecting…'}
+            {connected ? 'Live' : !process.env.NEXT_PUBLIC_SOCKET_URL ? 'Online' : connectionAttempted ? 'Offline — updates every few seconds' : 'Connecting…'}
           </span>
         </div>
         {isAdmin && (
@@ -220,7 +220,7 @@ export default function DiscussionBoard({ programId, catColor, isAdmin = false, 
         )}
 
         {messages.map(msg => {
-          const isOwn    = msg.userId === session?.user?.id
+          const isOwn = msg.userId === session?.user?.id
           const initials = msg.user.name.slice(0, 2).toUpperCase()
 
           return (

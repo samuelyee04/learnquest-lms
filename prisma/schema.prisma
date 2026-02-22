@@ -8,20 +8,21 @@ datasource db {
 }
 
 model User {
-  id          String       @id @default(cuid())
-  name        String
-  email       String       @unique
-  password    String
-  role        Role         @default(STUDENT)
-  avatar      String?
-  xpPoints    Int          @default(0)
-  level       Int          @default(1)
-  createdAt   DateTime     @default(now())
-  accounts    Account[]
-  discussions Discussion[]
-  enrollments Enrollment[]
-  quizResults QuizResult[]
-  sessions    Session[]
+  id              String            @id @default(cuid())
+  name            String
+  email           String            @unique
+  password        String
+  role            Role              @default(STUDENT)
+  avatar          String?
+  xpPoints        Int               @default(0)
+  level           Int               @default(1)
+  createdAt       DateTime          @default(now())
+  accounts        Account[]
+  discussions     Discussion[]
+  enrollments     Enrollment[]
+  quizResults     QuizResult[]
+  sessions        Session[]
+  episodeProgress EpisodeProgress[]
 }
 
 model Category {
@@ -54,14 +55,15 @@ model Program {
 }
 
 model Episode {
-  id        String   @id @default(cuid())
+  id        String            @id @default(cuid())
   programId String
   title     String
   videoUrl  String?
   duration  String?
-  order     Int      @default(0)
-  createdAt DateTime @default(now())
-  program   Program  @relation(fields: [programId], references: [id], onDelete: Cascade)
+  order     Int               @default(0)
+  createdAt DateTime          @default(now())
+  program   Program           @relation(fields: [programId], references: [id], onDelete: Cascade)
+  progress  EpisodeProgress[]
 }
 
 model Enrollment {
@@ -70,6 +72,7 @@ model Enrollment {
   programId   String
   progress    Int       @default(0)
   completed   Boolean   @default(false)
+  xpClaimed   Boolean   @default(false)
   enrolledAt  DateTime  @default(now())
   completedAt DateTime?
   program     Program   @relation(fields: [programId], references: [id], onDelete: Cascade)
@@ -81,9 +84,22 @@ model Enrollment {
 model Quiz {
   id        String       @id @default(cuid())
   programId String
+  title     String       @default("Quiz")
   questions Question[]
   program   Program      @relation(fields: [programId], references: [id], onDelete: Cascade)
   results   QuizResult[]
+}
+
+model EpisodeProgress {
+  id          String   @id @default(cuid())
+  userId      String
+  episodeId   String
+  completed   Boolean  @default(true)
+  completedAt DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id])
+  episode     Episode  @relation(fields: [episodeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, episodeId])
 }
 
 model Question {

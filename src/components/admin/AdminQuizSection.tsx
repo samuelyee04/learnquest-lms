@@ -1,5 +1,6 @@
 'use client'
 // Admin section to add quiz questions (multiple choice) to a program
+// Now supports multiple quizzes (quiz cards) per program
 
 import { useState } from 'react'
 
@@ -10,9 +11,15 @@ interface Question {
   order: number
 }
 
+interface QuizData {
+  id: string
+  title?: string
+  questions: Question[]
+}
+
 interface Props {
   programId: string
-  existingQuiz: { id: string; questions: Question[] } | null
+  existingQuizzes: QuizData[]
   catColor: string
   onUpdate: () => void
 }
@@ -25,7 +32,10 @@ interface QuestionDraft {
   correctIndex: number
 }
 
-export default function AdminQuizSection({ programId, existingQuiz, catColor, onUpdate }: Props) {
+export default function AdminQuizSection({ programId, existingQuizzes, catColor, onUpdate }: Props) {
+  const [selectedQuizIndex, setSelectedQuizIndex] = useState<number>(0)
+  const [creatingNewQuiz, setCreatingNewQuiz] = useState(false)
+  const [newQuizTitle, setNewQuizTitle] = useState('')
   const [questionText, setQuestionText] = useState('')
   const [options, setOptions] = useState<string[]>(() => [...DEFAULT_OPTIONS])
   const [correctIndex, setCorrectIndex] = useState(0)
@@ -34,8 +44,9 @@ export default function AdminQuizSection({ programId, existingQuiz, catColor, on
   const [error, setError] = useState<string | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
 
-  const quizId = existingQuiz?.id ?? null
-  const questions = existingQuiz?.questions ?? []
+  const selectedQuiz = existingQuizzes[selectedQuizIndex] ?? null
+  const quizId = selectedQuiz?.id ?? null
+  const questions = selectedQuiz?.questions ?? []
 
   const addToDrafts = (e: React.FormEvent) => {
     e.preventDefault()
@@ -72,7 +83,28 @@ export default function AdminQuizSection({ programId, existingQuiz, catColor, on
     setError(null)
     setSaving(true)
     try {
-      if (quizId) {
+      if (creatingNewQuiz || !quizId) {
+        // Create a brand-new quiz with all draft questions
+        const res = await fetch('/api/quiz/manage', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            programId,
+            title: newQuizTitle.trim() || 'Quiz',
+            questions: drafts.map((d, i) => ({
+              text: d.text,
+              options: d.options,
+              answer: d.correctIndex,
+              order: i,
+            })),
+          }),
+        })
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}))
+          throw new Error(data.error || 'Failed to create quiz')
+        }
+      } else {
+        // Add questions to existing quiz
         for (let i = 0; i < drafts.length; i++) {
           const d = drafts[i]
           const res = await fetch('/api/quiz/manage', {
@@ -91,26 +123,10 @@ export default function AdminQuizSection({ programId, existingQuiz, catColor, on
             throw new Error(data.error || 'Failed to add question')
           }
         }
-      } else {
-        const res = await fetch('/api/quiz/manage', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            programId,
-            questions: drafts.map((d, i) => ({
-              text: d.text,
-              options: d.options,
-              answer: d.correctIndex,
-              order: i,
-            })),
-          }),
-        })
-        if (!res.ok) {
-          const data = await res.json().catch(() => ({}))
-          throw new Error(data.error || 'Failed to create quiz')
-        }
       }
       setDrafts([])
+      setCreatingNewQuiz(false)
+      setNewQuizTitle('')
       onUpdate()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save')
@@ -136,9 +152,66 @@ export default function AdminQuizSection({ programId, existingQuiz, catColor, on
 
   return (
     <div className="space-y-6">
-      <h4 className="text-xs font-mono font-bold uppercase tracking-widest" style={{ color: catColor }}>
-        Quiz questions (add multiple, then save all)
-      </h4>
+      <div className="flex items-center justify-between">
+        <h4 className="text-xs font-mono font-bold uppercase tracking-widest" style={{ color: catColor }}>
+          Quiz Management
+        </h4>
+        <button
+          type="button"
+          onClick={() => {
+            setCreatingNewQuiz(true)
+            setDrafts([])
+            setNewQuizTitle('')
+          }}
+          className="px-4 py-2 rounded-xl text-xs font-mono font-bold uppercase tracking-widest transition-all hover:opacity-90"
+          style={{ background: `${catColor}22`, border: `1px solid ${catColor}44`, color: catColor }}
+        >
+          + New Quiz Card
+        </button>
+      </div>
+
+      {/* Quiz selector tabs */}
+      {existingQuizzes.length > 0 && !creatingNewQuiz && (
+        <div className="flex flex-wrap gap-2">
+          {existingQuizzes.map((q, i) => (
+            <button
+              key={q.id}
+              type="button"
+              onClick={() => setSelectedQuizIndex(i)}
+              className="px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition-all"
+              style={
+                selectedQuizIndex === i
+                  ? { background: `${catColor}22`, border: `1px solid ${catColor}44`, color: catColor }
+                  : { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)' }
+              }
+            >
+              {q.title || `Quiz ${i + 1}`} ({q.questions.length}Q)
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Creating new quiz card */}
+      {creatingNewQuiz && (
+        <div className="p-4 rounded-xl border border-white/10 bg-white/4 space-y-3">
+          <div className="flex items-center justify-between">
+            <p className="text-white/50 font-mono text-xs font-bold">Creating New Quiz Card</p>
+            <button
+              type="button"
+              onClick={() => { setCreatingNewQuiz(false); setDrafts([]) }}
+              className="text-white/40 hover:text-white text-xs font-mono"
+            >
+              Cancel
+            </button>
+          </div>
+          <input
+            value={newQuizTitle}
+            onChange={e => setNewQuizTitle(e.target.value)}
+            placeholder="Quiz title (e.g. TypeScript Learning)"
+            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm font-mono outline-none placeholder:text-white/25 focus:border-white/25"
+          />
+        </div>
+      )}
 
       {drafts.length > 0 && (
         <div className="space-y-2 p-4 rounded-xl border border-white/10 bg-white/4">
@@ -158,14 +231,16 @@ export default function AdminQuizSection({ programId, existingQuiz, catColor, on
             className="mt-2 px-4 py-2 rounded-xl text-xs font-mono font-bold uppercase disabled:opacity-50"
             style={{ background: `${catColor}22`, border: `1px solid ${catColor}44`, color: catColor }}
           >
-            {saving ? 'Saving...' : 'Save all questions'}
+            {saving ? 'Saving...' : creatingNewQuiz ? 'Create Quiz & Save Questions' : 'Save all questions'}
           </button>
         </div>
       )}
 
-      {questions.length > 0 && (
+      {!creatingNewQuiz && questions.length > 0 && (
         <div className="space-y-2">
-          <p className="text-white/50 font-mono text-xs">Existing questions ({questions.length})</p>
+          <p className="text-white/50 font-mono text-xs">
+            Existing questions in {selectedQuiz?.title || `Quiz ${selectedQuizIndex + 1}`} ({questions.length})
+          </p>
           <ul className="space-y-2">
             {questions.map((q, i) => (
               <li
@@ -193,7 +268,11 @@ export default function AdminQuizSection({ programId, existingQuiz, catColor, on
       )}
 
       <form onSubmit={addToDrafts} className="space-y-4 p-5 rounded-xl border border-white/10 bg-white/4">
-        <p className="text-white/50 font-mono text-xs">Add question to list (then click Save all above)</p>
+        <p className="text-white/50 font-mono text-xs">
+          {creatingNewQuiz
+            ? 'Add questions to new quiz card'
+            : 'Add question to list (then click Save all above)'}
+        </p>
         <div>
           <label className="block text-xs font-mono font-bold uppercase tracking-widest mb-2" style={{ color: catColor }}>
             Question
