@@ -319,16 +319,16 @@ export default function ProgramDetailPage() {
 
         {tab === 'overview' && (
           <div className="space-y-8">
-            <p className="text-white/60 font-mono text-sm leading-relaxed">{program.description}</p>
+            <p className="text-white/60 font-mono text-sm leading-relaxed whitespace-pre-wrap">{program.description}</p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="bg-white/4 rounded-xl p-5">
                 <h4 className="text-xs font-mono font-bold uppercase tracking-widest mb-3" style={{ color: cat.color }}>About</h4>
-                <p className="text-white/55 text-xs font-mono leading-relaxed">{program.about}</p>
+                <p className="text-white/55 text-xs font-mono leading-relaxed whitespace-pre-wrap">{program.about}</p>
               </div>
               <div className="bg-white/4 rounded-xl p-5">
                 <h4 className="text-xs font-mono font-bold uppercase tracking-widest mb-3" style={{ color: cat.color }}>Learning Outcomes</h4>
-                <p className="text-white/55 text-xs font-mono leading-relaxed">{program.outcome}</p>
+                <p className="text-white/55 text-xs font-mono leading-relaxed whitespace-pre-wrap">{program.outcome}</p>
               </div>
             </div>
 
@@ -552,7 +552,12 @@ export default function ProgramDetailPage() {
                           <button
                             key={ep.id}
                             type="button"
-                            onClick={() => setSelectedEpisode(ep)}
+                            onClick={() => {
+                              setSelectedEpisode(ep)
+                              if (isEnrolled && !isEpCompleted) {
+                                handleEpisodeComplete(ep.id)
+                              }
+                            }}
                             className="text-left p-4 rounded-xl bg-white/4 border border-white/6 hover:bg-white/6 hover:border-white/10 transition-all"
                             style={isEpCompleted ? { border: `1px solid ${cat.color}40` } : {}}
                           >
@@ -632,7 +637,24 @@ export default function ProgramDetailPage() {
                           <button
                             key={q.id}
                             type="button"
-                            onClick={() => setSelectedQuiz(q)}
+                            onClick={async () => {
+                              setSelectedQuiz(q)
+                              if (isEnrolled && !isQuizPassed) {
+                                try {
+                                  const res = await fetch('/api/quiz', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ quizId: q.id, autoPass: true })
+                                  })
+                                  if (res.ok) {
+                                    setToast('Quiz marked as passed! ✅')
+                                    refreshProgram()
+                                  }
+                                } catch {
+                                  setToast('Failed to mark quiz as passed')
+                                }
+                              }
+                            }}
                             className="text-left p-5 rounded-xl bg-white/4 border border-white/6 hover:bg-white/6 hover:border-white/10 transition-all"
                             style={isQuizPassed ? { border: `1px solid ${cat.color}40` } : {}}
                           >

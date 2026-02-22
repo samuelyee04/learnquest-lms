@@ -76,9 +76,9 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json()
-    const { quizId, answers } = body
+    const { quizId, answers, autoPass } = body
 
-    if (!quizId || !Array.isArray(answers)) {
+    if (!quizId || (!Array.isArray(answers) && !autoPass)) {
       return NextResponse.json(
         { error: 'quizId and answers array are required' },
         { status: 400 }
@@ -99,29 +99,41 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Quiz not found' }, { status: 404 })
     }
 
-    if (answers.length !== quiz.questions.length) {
-      return NextResponse.json(
-        { error: `Expected ${quiz.questions.length} answers, got ${answers.length}` },
-        { status: 400 }
-      )
-    }
-
-    // Grade the quiz on the server
     let score = 0
-    const breakdown = quiz.questions.map((question, index) => {
-      const isCorrect = answers[index] === question.answer
-      if (isCorrect) score++
-      return {
+    let breakdown: any[] = []
+    const total = quiz.questions.length
+    let passed = false
+
+    if (autoPass) {
+      score = total
+      passed = true
+      breakdown = quiz.questions.map((question) => ({
         questionId: question.id,
         question: question.text,
-        selected: answers[index],
+        selected: question.answer,
         correct: question.answer,
-        isCorrect,
+        isCorrect: true,
+      }))
+    } else {
+      if (answers.length !== quiz.questions.length) {
+        return NextResponse.json(
+          { error: `Expected ${quiz.questions.length} answers, got ${answers.length}` },
+          { status: 400 }
+        )
       }
-    })
-
-    const total = quiz.questions.length
-    const passed = score === total // Must get 100% to pass
+      breakdown = quiz.questions.map((question, index) => {
+        const isCorrect = answers[index] === question.answer
+        if (isCorrect) score++
+        return {
+          questionId: question.id,
+          question: question.text,
+          selected: answers[index],
+          correct: question.answer,
+          isCorrect,
+        }
+      })
+      passed = score === total // Must get 100% to pass
+    }
 
     // Save the result to database
     const result = await prisma.quizResult.create({

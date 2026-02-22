@@ -5,8 +5,8 @@ import { signIn } from 'next-auth/react'
 import Link from 'next/link'
 
 export default function LoginPage() {
-  const [form, setForm]       = useState({ email: '', password: '' })
-  const [error, setError]     = useState<string | null>(null)
+  const [form, setForm] = useState({ email: '', password: '' })
+  const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
   const [loading, setLoading] = useState(false)
 
@@ -18,12 +18,12 @@ export default function LoginPage() {
 
     try {
       const result = await signIn('credentials', {
-        email:    form.email,
+        email: form.email,
         password: form.password,
         redirect: false,
       })
 
-      if (!result || result.ok !== true) {
+      if (result?.error || !result || !result.ok) {
         setError(
           result?.error === 'CredentialsSignin' || result?.error
             ? 'Invalid email or password. Please try again.'

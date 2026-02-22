@@ -13,8 +13,8 @@ import AdminParticipants from '@/components/admin/AdminParticipants'
 import Toast from '@/components/ui/Toast'
 
 interface Props {
-  program:  Program
-  onClose:  () => void
+  program: Program
+  onClose: () => void
   onEnroll: (programId: string) => Promise<void>
   onUpdate: (programId: string, updated: Partial<Program>) => void
 }
@@ -26,27 +26,27 @@ const difficultyColor: Record<string, string> = {
 }
 
 export default function ProgramModal({ program, onClose, onEnroll, onUpdate }: Props) {
-  const { data: session }   = useSession()
-  const [tab, setTab]       = useState<Tab>('overview')
-  const [quiz, setQuiz]     = useState<Quiz | null>(null)
-  const [toast, setToast]   = useState<string | null>(null)
+  const { data: session } = useSession()
+  const [tab, setTab] = useState<Tab>('overview')
+  const [quiz, setQuiz] = useState<Quiz | null>(null)
+  const [toast, setToast] = useState<string | null>(null)
   const [enrolling, setEnrolling] = useState(false)
 
-  const isAdmin    = session?.user?.role === 'ADMIN'
+  const isAdmin = session?.user?.role === 'ADMIN'
   const enrollment = program.enrollment
   const isEnrolled = !!enrollment
   const isCompleted = enrollment?.completed ?? false
-  const cat        = program.category
+  const cat = program.category
 
   const tabs: { id: Tab; label: string }[] = [
-    { id: 'overview',    label: '📋 Overview'    },
-    { id: 'quiz',        label: '🧠 Quiz'        },
-    { id: 'discussion',  label: '💬 Discussion'  },
+    { id: 'overview', label: '📋 Overview' },
+    { id: 'quiz', label: '🧠 Quiz' },
+    { id: 'discussion', label: '💬 Discussion' },
     ...(isAdmin
       ? [
-          { id: 'manage' as Tab, label: '👥 Manage'   },
-          { id: 'stats'  as Tab, label: '📊 Stats'    },
-        ]
+        { id: 'manage' as Tab, label: '👥 Manage' },
+        { id: 'stats' as Tab, label: '📊 Stats' },
+      ]
       : []),
   ]
 
@@ -107,7 +107,7 @@ export default function ProgramModal({ program, onClose, onEnroll, onUpdate }: P
           <div className="flex items-start justify-between mb-4">
             <div className="flex-1 pr-4">
               <p className="text-xs font-mono font-bold uppercase tracking-widest mb-2"
-                 style={{ color: cat.color }}>
+                style={{ color: cat.color }}>
                 {cat.icon} {cat.name} &nbsp;·&nbsp;
                 <span style={{ color: difficultyColor[program.difficulty] }}>
                   ◆ {program.difficulty}
@@ -136,11 +136,10 @@ export default function ProgramModal({ program, onClose, onEnroll, onUpdate }: P
               <button
                 key={t.id}
                 onClick={() => setTab(t.id)}
-                className={`pb-3 px-4 text-xs font-mono font-bold uppercase tracking-widest transition-all border-b-2 ${
-                  tab === t.id
+                className={`pb-3 px-4 text-xs font-mono font-bold uppercase tracking-widest transition-all border-b-2 ${tab === t.id
                     ? 'border-b-2 text-[var(--cat)]'
                     : 'border-transparent text-white/30 hover:text-white/60'
-                }`}
+                  }`}
                 style={{ '--cat': cat.color, borderBottomColor: tab === t.id ? cat.color : 'transparent' } as any}
               >
                 {t.label}
@@ -174,13 +173,13 @@ export default function ProgramModal({ program, onClose, onEnroll, onUpdate }: P
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="bg-white/4 rounded-xl p-5">
                   <h4 className="text-xs font-mono font-bold uppercase tracking-widest mb-3"
-                      style={{ color: cat.color }}>About</h4>
-                  <p className="text-white/55 text-xs font-mono leading-relaxed">{program.about}</p>
+                    style={{ color: cat.color }}>About</h4>
+                  <p className="text-white/55 text-xs font-mono leading-relaxed whitespace-pre-wrap">{program.about}</p>
                 </div>
                 <div className="bg-white/4 rounded-xl p-5">
                   <h4 className="text-xs font-mono font-bold uppercase tracking-widest mb-3"
-                      style={{ color: cat.color }}>Outcomes</h4>
-                  <p className="text-white/55 text-xs font-mono leading-relaxed">{program.outcome}</p>
+                    style={{ color: cat.color }}>Outcomes</h4>
+                  <p className="text-white/55 text-xs font-mono leading-relaxed whitespace-pre-wrap">{program.outcome}</p>
                 </div>
               </div>
 
@@ -192,7 +191,7 @@ export default function ProgramModal({ program, onClose, onEnroll, onUpdate }: P
                 >
                   <div className="flex justify-between items-center mb-3">
                     <span className="text-xs font-mono font-bold uppercase tracking-widest"
-                          style={{ color: cat.color }}>
+                      style={{ color: cat.color }}>
                       Your Progress
                     </span>
                     <span className="text-xs font-mono font-bold" style={{ color: cat.color }}>
