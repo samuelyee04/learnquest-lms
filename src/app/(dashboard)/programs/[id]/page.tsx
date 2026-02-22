@@ -436,15 +436,13 @@ export default function ProgramDetailPage() {
                     >
                       ✓ Enrolled
                     </button>
-                    {!isCompleted && (
-                      <button
-                        onClick={handleLeave}
-                        disabled={leaving}
-                        className="px-6 py-3 rounded-xl font-mono font-bold text-xs uppercase tracking-widest text-white/40 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 transition-all disabled:opacity-40"
-                      >
-                        {leaving ? '...' : 'Leave program'}
-                      </button>
-                    )}
+                    <button
+                      onClick={handleLeave}
+                      disabled={leaving}
+                      className="px-6 py-3 rounded-xl font-mono font-bold text-xs uppercase tracking-widest text-white/40 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 transition-all disabled:opacity-40"
+                    >
+                      {leaving ? '...' : 'Leave program'}
+                    </button>
                   </>
                 )}
               </div>
@@ -637,23 +635,8 @@ export default function ProgramDetailPage() {
                           <button
                             key={q.id}
                             type="button"
-                            onClick={async () => {
+                            onClick={() => {
                               setSelectedQuiz(q)
-                              if (isEnrolled && !isQuizPassed) {
-                                try {
-                                  const res = await fetch('/api/quiz', {
-                                    method: 'POST',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({ quizId: q.id, autoPass: true })
-                                  })
-                                  if (res.ok) {
-                                    setToast('Quiz marked as passed! ✅')
-                                    refreshProgram()
-                                  }
-                                } catch {
-                                  setToast('Failed to mark quiz as passed')
-                                }
-                              }
                             }}
                             className="text-left p-5 rounded-xl bg-white/4 border border-white/6 hover:bg-white/6 hover:border-white/10 transition-all"
                             style={isQuizPassed ? { border: `1px solid ${cat.color}40` } : {}}
