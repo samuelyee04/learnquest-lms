@@ -234,6 +234,37 @@ export async function DELETE(req: Request) {
       )
     }
 
+    const program = await prisma.program.findUnique({
+      where: { id: programId },
+      include: {
+        episodes: { select: { id: true } },
+        quizzes: { select: { id: true } },
+      },
+    })
+
+    if (program) {
+      const episodeIds = program.episodes.map(e => e.id)
+      const quizIds = program.quizzes.map(q => q.id)
+
+      if (episodeIds.length > 0) {
+        await prisma.episodeProgress.deleteMany({
+          where: {
+            userId: session.user.id,
+            episodeId: { in: episodeIds },
+          },
+        })
+      }
+
+      if (quizIds.length > 0) {
+        await prisma.quizResult.deleteMany({
+          where: {
+            userId: session.user.id,
+            quizId: { in: quizIds },
+          },
+        })
+      }
+    }
+
     await prisma.enrollment.delete({
       where: {
         userId_programId: {

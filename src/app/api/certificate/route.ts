@@ -94,15 +94,28 @@ export async function GET(req: Request) {
       align-items: center;
       justify-content: center;
       min-height: 100vh;
-      padding: 40px;
+      padding: 20px;
       font-family: 'Space Mono', monospace;
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
+      overflow-x: hidden;
+    }
+
+    .cert-scale-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+      /* Dynamic scaling for screens */
+      transform: scale(min(1, 100vw / 940, 100vh / 660));
+      transform-origin: center center;
     }
 
     .cert {
       width: 900px;
-      min-height: 620px;
+      height: 620px; /* Fixed height instead of min-height for reliable scaling */
+      flex-shrink: 0;
       background: linear-gradient(145deg, #0d0d1a, #0a0a14);
       border: 2px solid ${catColor}44;
       -webkit-print-color-adjust: exact;
@@ -312,21 +325,45 @@ export async function GET(req: Request) {
       letter-spacing: 1px;
       cursor: pointer;
       box-shadow: 0 4px 24px rgba(0,245,212,.4);
+      z-index: 50;
     }
 
     @media print {
-      @page { size: landscape; margin: 0; }
-      body {
+      /* Force Landscape and exact physical size */
+      @page { 
+        size: 11in 8.5in; /* Standard US Letter Landscape */
+        margin: 0; 
+      }
+      
+      html, body {
+        width: 11in;
+        height: 8.5in;
+        overflow: hidden !important; 
         background: #06060f !important;
         padding: 0 !important;
+        margin: 0 !important;
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
       }
+      
+      .cert-scale-wrapper {
+        width: 11in;
+        height: 8.5in;
+        display: flex; 
+        align-items: center;
+        justify-content: center;
+        /* Force explicit scaling for printing to fit within 11x8.5 nicely without spilling over */
+        transform: scale(1.15) !important;
+      }
+
       .cert {
         box-shadow: none !important;
         background: linear-gradient(145deg, #0d0d1a, #0a0a14) !important;
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
+        margin: 0 !important;
+        page-break-inside: avoid !important;
+        page-break-after: avoid !important;
       }
       .brand { color: #00f5d4 !important; -webkit-print-color-adjust: exact !important; }
       .big-title, .program-name { color: #ffffff !important; }
@@ -344,49 +381,51 @@ export async function GET(req: Request) {
   </style>
 </head>
 <body>
-  <div class="cert">
-    <div class="accent-bar"></div>
+  <div class="cert-scale-wrapper">
+    <div class="cert">
+      <div class="accent-bar"></div>
 
-    <div class="top-row">
-      <div class="brand">🎮 LEARNQUEST</div>
-      <div class="cert-id">
-        CERTIFICATE ID<br/>
-        LQ-${Date.now().toString(36).toUpperCase()}<br/>
-        <span style="font-size:9px">ISSUED ${completedDate.toUpperCase()}</span>
-      </div>
-    </div>
-
-    <div class="main">
-      <div class="cert-of">Certificate of Completion</div>
-      <div class="big-title">Achievement Unlocked</div>
-
-      <div class="cat-badge">${catIcon} ${enrollment.program.category.name}</div>
-
-      <div class="certifies">This certifies that</div>
-      <div class="student-name">${studentName}</div>
-      <div class="has-completed">has successfully completed</div>
-      <div class="program-name">${programTitle}</div>
-      <div class="program-meta">${duration} &nbsp;·&nbsp; ${difficulty}</div>
-    </div>
-
-    <div class="divider"></div>
-
-    <div class="bottom-row">
-      <div class="signature-block">
-        <div class="signature-line"></div>
-        <div class="signature-name">DR. MORGAN</div>
-        <div class="signature-title">PROGRAM DIRECTOR · LEARNQUEST</div>
+      <div class="top-row">
+        <div class="brand">🎮 LEARNQUEST</div>
+        <div class="cert-id">
+          CERTIFICATE ID<br/>
+          LQ-${Date.now().toString(36).toUpperCase()}<br/>
+          <span style="font-size:9px">ISSUED ${completedDate.toUpperCase()}</span>
+        </div>
       </div>
 
-      <div class="xp-badge">
-        <div class="xp-amount">+${enrollment.program.rewardPoints}</div>
-        <div class="xp-label">XP Earned</div>
+      <div class="main">
+        <div class="cert-of">Certificate of Completion</div>
+        <div class="big-title">Achievement Unlocked</div>
+
+        <div class="cat-badge">${catIcon} ${enrollment.program.category.name}</div>
+
+        <div class="certifies">This certifies that</div>
+        <div class="student-name">${studentName}</div>
+        <div class="has-completed">has successfully completed</div>
+        <div class="program-name">${programTitle}</div>
+        <div class="program-meta">${duration} &nbsp;·&nbsp; ${difficulty}</div>
       </div>
 
-      <div class="signature-block">
-        <div class="signature-line"></div>
-        <div class="signature-name">${completedDate.toUpperCase()}</div>
-        <div class="signature-title">DATE OF COMPLETION</div>
+      <div class="divider"></div>
+
+      <div class="bottom-row">
+        <div class="signature-block">
+          <div class="signature-line"></div>
+          <div class="signature-name">DR. MORGAN</div>
+          <div class="signature-title">PROGRAM DIRECTOR · LEARNQUEST</div>
+        </div>
+
+        <div class="xp-badge">
+          <div class="xp-amount">+${enrollment.program.rewardPoints}</div>
+          <div class="xp-label">XP Earned</div>
+        </div>
+
+        <div class="signature-block">
+          <div class="signature-line"></div>
+          <div class="signature-name">${completedDate.toUpperCase()}</div>
+          <div class="signature-title">DATE OF COMPLETION</div>
+        </div>
       </div>
     </div>
   </div>

@@ -124,7 +124,7 @@ export default function ProgramDetailPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ programId: id }),
       })
-      setProgram(p => p ? { ...p, enrollment: null } : p)
+      setProgram(p => p ? { ...p, enrollment: null, episodeProgress: [], quizResults: [] } : p)
       setToast('Left program successfully')
     } catch {
       setToast('Failed to leave program')
