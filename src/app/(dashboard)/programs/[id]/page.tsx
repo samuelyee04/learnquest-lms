@@ -180,9 +180,9 @@ export default function ProgramDetailPage() {
           enrollment: p.enrollment ? { ...p.enrollment, xpClaimed: true } : p.enrollment,
         } : p)
         setToast(`+${program?.rewardPoints ?? 0} XP claimed successfully! 🎉`)
-        // Update session to reflect new XP
-        if (data.newXpPoints !== null) {
-          await updateSession()
+        // Update session to reflect new XP and level
+        if (data.newXpPoints !== undefined) {
+          await updateSession({ xpPoints: data.newXpPoints, level: data.newLevel })
         }
       }
     } catch {

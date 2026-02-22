@@ -132,7 +132,7 @@ export async function POST(req: Request) {
           isCorrect,
         }
       })
-      passed = score === total // Must get 100% to pass
+      passed = score >= Math.ceil(total / 2) // Must get 50% to pass
     }
 
     // Save the result to database

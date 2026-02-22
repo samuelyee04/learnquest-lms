@@ -172,6 +172,7 @@ export async function PATCH(req: Request) {
 
     // Award XP points when manually claimed
     let newXpPoints: number | null = null
+    let returnedLevel: number | null = null
     if (claimXp === true && existing.completed && !existing.xpClaimed) {
       const program = await prisma.program.findUnique({
         where: { id: programId },
@@ -185,11 +186,22 @@ export async function PATCH(req: Request) {
             xpPoints: { increment: program.rewardPoints },
           },
         })
+
+        const newLevel = Math.floor(updatedUser.xpPoints / 1000) + 1
+
+        if (newLevel > updatedUser.level) {
+          await prisma.user.update({
+            where: { id: session.user.id },
+            data: { level: newLevel },
+          })
+        }
+
         newXpPoints = updatedUser.xpPoints
+        returnedLevel = newLevel > updatedUser.level ? newLevel : updatedUser.level
       }
     }
 
-    return NextResponse.json({ ...enrollment, newXpPoints })
+    return NextResponse.json({ ...enrollment, newXpPoints, newLevel: returnedLevel })
   } catch (error) {
     console.error('[ENROLLMENTS_PATCH]', error)
     return NextResponse.json(

@@ -5,20 +5,20 @@ import { useState } from 'react'
 import { Quiz, QuizResult } from '@/types'
 
 interface Props {
-  quiz:       Quiz
-  catColor:   string
+  quiz: Quiz
+  catColor: string
   onComplete: () => void
 }
 
 type Phase = 'idle' | 'active' | 'done'
 
 export default function QuizEngine({ quiz, catColor, onComplete }: Props) {
-  const [phase, setPhase]       = useState<Phase>('idle')
-  const [index, setIndex]       = useState(0)
+  const [phase, setPhase] = useState<Phase>('idle')
+  const [index, setIndex] = useState(0)
   const [selected, setSelected] = useState<number | null>(null)
-  const [answers, setAnswers]   = useState<number[]>([])
-  const [result, setResult]     = useState<QuizResult | null>(null)
-  const [loading, setLoading]   = useState(false)
+  const [answers, setAnswers] = useState<number[]>([])
+  const [result, setResult] = useState<QuizResult | null>(null)
+  const [loading, setLoading] = useState(false)
 
   const currentQuestion = quiz.questions[index]
 
@@ -76,7 +76,7 @@ export default function QuizEngine({ quiz, catColor, onComplete }: Props) {
           {quiz.questions.length} Questions
         </h3>
         <p className="text-white/40 font-mono text-sm mb-8 max-w-sm mx-auto">
-          You need to answer all questions correctly to complete this program and claim your XP reward.
+          You need to answer at least half of the questions correctly to complete this program and claim your XP reward.
         </p>
         <button
           onClick={handleStart}
@@ -100,7 +100,7 @@ export default function QuizEngine({ quiz, catColor, onComplete }: Props) {
           </h3>
           <p className="text-white/40 font-mono text-sm">
             {result.passed
-              ? '🎉 Perfect score! Program marked as complete.'
+              ? '🎉 You passed! Program marked as complete.'
               : `You scored ${result.percentage}%. Keep studying and try again!`}
           </p>
         </div>
@@ -203,8 +203,8 @@ export default function QuizEngine({ quiz, catColor, onComplete }: Props) {
         {loading
           ? 'Submitting...'
           : index < quiz.questions.length - 1
-          ? 'Next Question →'
-          : 'Submit Quiz ✓'}
+            ? 'Next Question →'
+            : 'Submit Quiz ✓'}
       </button>
     </div>
   )

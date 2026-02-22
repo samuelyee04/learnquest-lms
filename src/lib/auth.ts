@@ -47,12 +47,16 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       if (user) {
         token.id = user.id
         token.role = (user as any).role
         token.xpPoints = (user as any).xpPoints
         token.level = (user as any).level
+      }
+      if (trigger === 'update' && session) {
+        if (session.xpPoints !== undefined) token.xpPoints = session.xpPoints
+        if (session.level !== undefined) token.level = session.level
       }
       return token
     },

@@ -7,14 +7,14 @@ import { signOut, useSession } from 'next-auth/react'
 
 export default function Navbar() {
   const { data: session, status } = useSession()
-  const pathname                  = usePathname()
-  const router                    = useRouter()
-  const [menuOpen, setMenuOpen]   = useState(false)
+  const pathname = usePathname()
+  const router = useRouter()
+  const [menuOpen, setMenuOpen] = useState(false)
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
-  const isAdmin    = session?.user?.role === 'ADMIN'
-  const isLoading  = status === 'loading'
+  const isAdmin = session?.user?.role === 'ADMIN'
+  const isLoading = status === 'loading'
   const isLoggedIn = !!session?.user
 
   const isAuthPage = pathname === '/login' || pathname === '/register'
@@ -33,7 +33,7 @@ export default function Navbar() {
   if (isAuthPage || isLandingPage) return null
 
   const navLinks = [
-    { href: '/explore',     label: 'Explore'     },
+    { href: '/explore', label: 'Explore' },
     { href: '/my-learning', label: 'My Learning' },
     ...(isAdmin ? [{ href: '/admin', label: 'Admin' }] : []),
   ]
@@ -69,11 +69,10 @@ export default function Navbar() {
                   <Link
                     key={link.href}
                     href={link.href}
-                    className={`px-4 py-2 rounded-lg text-xs font-bold font-mono uppercase tracking-wider transition-all ${
-                      pathname.startsWith(link.href)
+                    className={`px-4 py-2 rounded-lg text-xs font-bold font-mono uppercase tracking-wider transition-all ${pathname.startsWith(link.href)
                         ? 'bg-cyan-400/15 border border-cyan-400/40 text-cyan-400'
                         : 'text-white/50 hover:text-white hover:bg-white/5 border border-transparent'
-                    }`}
+                      }`}
                   >
                     {link.label}
                   </Link>
@@ -115,13 +114,13 @@ export default function Navbar() {
                             Level {(session.user as any).level ?? 1}
                           </span>
                           <span className="text-cyan-400 font-mono text-xs font-bold">
-                            {((session.user as any).xpPoints ?? 0).toLocaleString()} XP
+                            {((session.user as any).xpPoints ?? 0).toLocaleString()} / {(((session.user as any).level ?? 1) * 1000).toLocaleString()} XP
                           </span>
                         </div>
                         <div className="mt-2 h-1.5 bg-white/10 rounded-full overflow-hidden">
                           <div
-                            className="h-full bg-gradient-to-r from-cyan-400 to-blue-400 rounded-full"
-                            style={{ width: '60%' }}
+                            className="h-full bg-gradient-to-r from-cyan-400 to-blue-400 rounded-full transition-all duration-500"
+                            style={{ width: `${(((session.user as any).xpPoints ?? 0) % 1000) / 10}%` }}
                           />
                         </div>
                       </div>
@@ -173,11 +172,10 @@ export default function Navbar() {
                     key={link.href}
                     href={link.href}
                     onClick={() => setMenuOpen(false)}
-                    className={`flex items-center px-4 py-3 rounded-xl text-sm font-mono font-bold transition-all ${
-                      pathname.startsWith(link.href)
+                    className={`flex items-center px-4 py-3 rounded-xl text-sm font-mono font-bold transition-all ${pathname.startsWith(link.href)
                         ? 'bg-cyan-400/15 text-cyan-400 border border-cyan-400/25'
                         : 'text-white/50 hover:text-white hover:bg-white/5'
-                    }`}
+                      }`}
                   >
                     {link.label}
                   </Link>
