@@ -32,13 +32,13 @@ export async function GET(req: Request) {
     const enrollment = await prisma.enrollment.findUnique({
       where: {
         userId_programId: {
-          userId:    session.user.id,
+          userId: session.user.id,
           programId,
         },
       },
       include: {
         program: { include: { category: true } },
-        user:    { select: { id: true, name: true, email: true } },
+        user: { select: { id: true, name: true, email: true } },
       },
     })
 
@@ -64,18 +64,18 @@ export async function GET(req: Request) {
 
     const completedDate = enrollment.completedAt
       ? new Date(enrollment.completedAt).toLocaleDateString('en-US', {
-          year: 'numeric', month: 'long', day: 'numeric'
-        })
+        year: 'numeric', month: 'long', day: 'numeric'
+      })
       : new Date().toLocaleDateString('en-US', {
-          year: 'numeric', month: 'long', day: 'numeric'
-        })
+        year: 'numeric', month: 'long', day: 'numeric'
+      })
 
-    const catColor  = enrollment.program.category.color ?? '#00b4d8'
-    const catIcon   = enrollment.program.category.icon  ?? '🎓'
+    const catColor = enrollment.program.category.color ?? '#00b4d8'
+    const catIcon = enrollment.program.category.icon ?? '🎓'
     const studentName = enrollment.user.name
     const programTitle = enrollment.program.title
-    const duration     = enrollment.program.duration
-    const difficulty   = enrollment.program.difficulty
+    const duration = enrollment.program.duration
+    const difficulty = enrollment.program.difficulty
 
     const html = `<!DOCTYPE html>
 <html lang="en">
@@ -315,6 +315,7 @@ export async function GET(req: Request) {
     }
 
     @media print {
+      @page { size: landscape; margin: 0; }
       body {
         background: #06060f !important;
         padding: 0 !important;

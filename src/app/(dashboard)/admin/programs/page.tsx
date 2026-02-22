@@ -228,32 +228,36 @@ export default function AdminProgramsPage() {
             {programs.map(p => (
               <div
                 key={p.id}
-                className="flex items-center gap-4 p-5 bg-white/4 border border-white/6 rounded-xl hover:bg-white/6 transition-colors"
+                className="flex flex-col sm:flex-row sm:items-center gap-4 p-5 bg-white/4 border border-white/6 rounded-xl hover:bg-white/6 transition-colors"
               >
-                <span className="text-2xl">{p.category?.icon ?? '📚'}</span>
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-mono font-bold text-white text-sm truncate">{p.title}</h3>
-                  <div className="flex items-center gap-3 mt-1 text-xs font-mono text-white/35">
-                    <span style={{ color: p.category?.color }}>{p.category?.name}</span>
-                    <span>◆ {p.difficulty}</span>
-                    <span>👥 {p._count?.enrollments ?? 0}</span>
-                    <span>⚡ {p.rewardPoints} XP</span>
+                <div className="flex items-start gap-4 flex-1 min-w-0">
+                  <span className="text-2xl pt-1">{p.category?.icon ?? '📚'}</span>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-mono font-bold text-white text-sm truncate">{p.title}</h3>
+                    <div className="flex items-center gap-3 mt-1 text-xs font-mono text-white/35 flex-wrap">
+                      <span style={{ color: p.category?.color }}>{p.category?.name}</span>
+                      <span>◆ {p.difficulty}</span>
+                      <span>👥 {p._count?.enrollments ?? 0}</span>
+                      <span>⚡ {p.rewardPoints} XP</span>
+                    </div>
                   </div>
                 </div>
-                <button
-                  onClick={() => setEditing(p)}
-                  className="px-4 py-2 rounded-lg text-xs font-mono font-bold uppercase tracking-wider bg-white/5 border border-white/10 text-white/50 hover:text-white hover:bg-white/10 transition-all"
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={() => handleDelete(p.id)}
-                  disabled={deleting === p.id}
-                  className="px-4 py-2 rounded-lg text-xs font-mono font-bold uppercase tracking-wider transition-all hover:opacity-90 disabled:opacity-40"
-                  style={{ border: '1px solid rgba(247,37,133,.3)', background: 'rgba(247,37,133,.08)', color: '#f72585' }}
-                >
-                  {deleting === p.id ? '...' : 'Delete'}
-                </button>
+                <div className="flex items-center justify-end sm:justify-start gap-2 w-full sm:w-auto mt-2 sm:mt-0 pt-3 sm:pt-0 border-t border-white/10 sm:border-0 pl-0 sm:pl-2">
+                  <button
+                    onClick={() => setEditing(p)}
+                    className="flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-mono font-bold uppercase tracking-wider bg-white/5 border border-white/10 text-white/50 hover:text-white hover:bg-white/10 transition-all text-center"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDelete(p.id)}
+                    disabled={deleting === p.id}
+                    className="flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-mono font-bold uppercase tracking-wider transition-all hover:opacity-90 disabled:opacity-40 text-center"
+                    style={{ border: '1px solid rgba(247,37,133,.3)', background: 'rgba(247,37,133,.08)', color: '#f72585' }}
+                  >
+                    {deleting === p.id ? '...' : 'Delete'}
+                  </button>
+                </div>
               </div>
             ))}
           </div>
