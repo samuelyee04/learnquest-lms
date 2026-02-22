@@ -296,7 +296,7 @@ export default function ProgramDetailPage() {
           </div>
 
           {/* Tabs */}
-          <div className="flex flex-wrap gap-1 mt-6">
+          <div className="flex overflow-x-auto whitespace-nowrap gap-1 mt-6 [&::-webkit-scrollbar]:hidden">
             {tabs.map(t => (
               <button
                 key={t.id}

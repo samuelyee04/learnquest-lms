@@ -13,7 +13,7 @@ export default async function Home() {
     <div className="min-h-screen bg-[#06060f] text-white flex flex-col">
       <section className="flex-1 flex flex-col items-center justify-center px-4 text-center">
         <div className="mb-6 text-6xl">🎮</div>
-        <h1 className="text-5xl sm:text-6xl font-black font-mono tracking-tight bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-500 bg-clip-text text-transparent">
+        <h1 className="text-4xl sm:text-6xl font-black font-mono tracking-tight bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-500 bg-clip-text text-transparent">
           LearnQuest
         </h1>
         <p className="mt-4 text-lg sm:text-xl text-white/60 max-w-xl font-mono">

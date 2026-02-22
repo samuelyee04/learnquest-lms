@@ -20,9 +20,9 @@ model User {
   accounts        Account[]
   discussions     Discussion[]
   enrollments     Enrollment[]
+  episodeProgress EpisodeProgress[]
   quizResults     QuizResult[]
   sessions        Session[]
-  episodeProgress EpisodeProgress[]
 }
 
 model Category {
@@ -72,9 +72,9 @@ model Enrollment {
   programId   String
   progress    Int       @default(0)
   completed   Boolean   @default(false)
-  xpClaimed   Boolean   @default(false)
   enrolledAt  DateTime  @default(now())
   completedAt DateTime?
+  xpClaimed   Boolean   @default(false)
   program     Program   @relation(fields: [programId], references: [id], onDelete: Cascade)
   user        User      @relation(fields: [userId], references: [id])
 
@@ -96,8 +96,8 @@ model EpisodeProgress {
   episodeId   String
   completed   Boolean  @default(true)
   completedAt DateTime @default(now())
-  user        User     @relation(fields: [userId], references: [id])
   episode     Episode  @relation(fields: [episodeId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [userId], references: [id])
 
   @@unique([userId, episodeId])
 }
