@@ -19,10 +19,17 @@ interface Props {
 
 const DEFAULT_OPTIONS = ['', '', '', '']
 
+interface QuestionDraft {
+  text: string
+  options: string[]
+  correctIndex: number
+}
+
 export default function AdminQuizSection({ programId, existingQuiz, catColor, onUpdate }: Props) {
   const [questionText, setQuestionText] = useState('')
   const [options, setOptions] = useState<string[]>(() => [...DEFAULT_OPTIONS])
   const [correctIndex, setCorrectIndex] = useState(0)
+  const [drafts, setDrafts] = useState<QuestionDraft[]>([])
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
@@ -30,7 +37,7 @@ export default function AdminQuizSection({ programId, existingQuiz, catColor, on
   const quizId = existingQuiz?.id ?? null
   const questions = existingQuiz?.questions ?? []
 
-  const addQuestion = async (e: React.FormEvent) => {
+  const addToDrafts = (e: React.FormEvent) => {
     e.preventDefault()
     const text = questionText.trim()
     const opts = options.map(o => o.trim()).filter(Boolean)
@@ -47,23 +54,42 @@ export default function AdminQuizSection({ programId, existingQuiz, catColor, on
       return
     }
     setError(null)
+    setDrafts(d => [...d, { text, options: opts, correctIndex }])
+    setQuestionText('')
+    setOptions([...DEFAULT_OPTIONS])
+    setCorrectIndex(0)
+  }
+
+  const removeDraft = (index: number) => {
+    setDrafts(d => d.filter((_, i) => i !== index))
+  }
+
+  const saveAllDrafts = async () => {
+    if (drafts.length === 0) {
+      setError('Add at least one question below, then click "Add to list" and "Save all questions".')
+      return
+    }
+    setError(null)
     setSaving(true)
     try {
       if (quizId) {
-        const res = await fetch('/api/quiz/manage', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            quizId,
-            text,
-            options: opts,
-            answer: correctIndex,
-            order: questions.length,
-          }),
-        })
-        if (!res.ok) {
-          const data = await res.json().catch(() => ({}))
-          throw new Error(data.error || 'Failed to add question')
+        for (let i = 0; i < drafts.length; i++) {
+          const d = drafts[i]
+          const res = await fetch('/api/quiz/manage', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              quizId,
+              text: d.text,
+              options: d.options,
+              answer: d.correctIndex,
+              order: questions.length + i,
+            }),
+          })
+          if (!res.ok) {
+            const data = await res.json().catch(() => ({}))
+            throw new Error(data.error || 'Failed to add question')
+          }
         }
       } else {
         const res = await fetch('/api/quiz/manage', {
@@ -71,7 +97,12 @@ export default function AdminQuizSection({ programId, existingQuiz, catColor, on
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             programId,
-            questions: [{ text, options: opts, answer: correctIndex, order: 0 }],
+            questions: drafts.map((d, i) => ({
+              text: d.text,
+              options: d.options,
+              answer: d.correctIndex,
+              order: i,
+            })),
           }),
         })
         if (!res.ok) {
@@ -79,9 +110,7 @@ export default function AdminQuizSection({ programId, existingQuiz, catColor, on
           throw new Error(data.error || 'Failed to create quiz')
         }
       }
-      setQuestionText('')
-      setOptions([...DEFAULT_OPTIONS])
-      setCorrectIndex(0)
+      setDrafts([])
       onUpdate()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save')
@@ -108,8 +137,31 @@ export default function AdminQuizSection({ programId, existingQuiz, catColor, on
   return (
     <div className="space-y-6">
       <h4 className="text-xs font-mono font-bold uppercase tracking-widest" style={{ color: catColor }}>
-        Quiz questions (multiple choice)
+        Quiz questions (add multiple, then save all)
       </h4>
+
+      {drafts.length > 0 && (
+        <div className="space-y-2 p-4 rounded-xl border border-white/10 bg-white/4">
+          <p className="text-white/50 font-mono text-xs">New questions to add ({drafts.length})</p>
+          <ul className="space-y-2">
+            {drafts.map((d, i) => (
+              <li key={i} className="flex items-center justify-between gap-3 p-3 bg-white/5 rounded-lg border border-white/6">
+                <p className="font-mono text-sm text-white truncate flex-1">{d.text}</p>
+                <button type="button" onClick={() => removeDraft(i)} className="text-white/40 hover:text-red-400 text-xs font-mono">Remove</button>
+              </li>
+            ))}
+          </ul>
+          <button
+            type="button"
+            onClick={saveAllDrafts}
+            disabled={saving}
+            className="mt-2 px-4 py-2 rounded-xl text-xs font-mono font-bold uppercase disabled:opacity-50"
+            style={{ background: `${catColor}22`, border: `1px solid ${catColor}44`, color: catColor }}
+          >
+            {saving ? 'Saving...' : 'Save all questions'}
+          </button>
+        </div>
+      )}
 
       {questions.length > 0 && (
         <div className="space-y-2">
@@ -140,8 +192,8 @@ export default function AdminQuizSection({ programId, existingQuiz, catColor, on
         </div>
       )}
 
-      <form onSubmit={addQuestion} className="space-y-4 p-5 rounded-xl border border-white/10 bg-white/4">
-        <p className="text-white/50 font-mono text-xs">Add new question</p>
+      <form onSubmit={addToDrafts} className="space-y-4 p-5 rounded-xl border border-white/10 bg-white/4">
+        <p className="text-white/50 font-mono text-xs">Add question to list (then click Save all above)</p>
         <div>
           <label className="block text-xs font-mono font-bold uppercase tracking-widest mb-2" style={{ color: catColor }}>
             Question
@@ -187,11 +239,10 @@ export default function AdminQuizSection({ programId, existingQuiz, catColor, on
         {error && <p className="text-red-400 font-mono text-xs">{error}</p>}
         <button
           type="submit"
-          disabled={saving}
-          className="w-full py-3 rounded-xl font-mono font-bold text-xs uppercase tracking-widest transition-all disabled:opacity-50 hover:opacity-90"
-          style={{ background: `${catColor}22`, border: `1px solid ${catColor}44`, color: catColor }}
+          className="w-full py-3 rounded-xl font-mono font-bold text-xs uppercase tracking-widest transition-all hover:opacity-90 border border-white/20 text-white/70"
+          style={{ background: 'transparent' }}
         >
-          {saving ? 'Saving...' : quizId ? 'Add question' : 'Create quiz & add question'}
+          Add to list
         </button>
       </form>
     </div>

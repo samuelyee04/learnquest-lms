@@ -11,6 +11,7 @@ import AdminProgramEditor from '@/components/admin/AdminProgramEditor'
 import AdminStats from '@/components/admin/AdminStats'
 import AdminParticipants from '@/components/admin/AdminParticipants'
 import AdminQuizSection from '@/components/admin/AdminQuizSection'
+import AdminEpisodeSection from '@/components/admin/AdminEpisodeSection'
 import Toast from '@/components/ui/Toast'
 
 type Tab = 'overview' | 'episodes' | 'quiz' | 'discussion' | 'manage' | 'stats'
@@ -272,16 +273,36 @@ export default function ProgramDetailPage() {
                 <div className="h-2 bg-white/8 rounded-full overflow-hidden">
                   <div className="h-full rounded-full transition-all duration-700" style={{ width: `${enrollment?.progress ?? 0}%`, background: `linear-gradient(90deg, ${cat.color}, #4cc9f0)` }} />
                 </div>
-                {isCompleted && (
-                  <div className="flex gap-3 mt-4">
-                    <button
-                      onClick={handleDownloadCertificate}
-                      className="flex-1 py-3 rounded-xl font-mono font-bold text-xs text-[#0a0a14] uppercase tracking-widest hover:opacity-90 active:scale-95 transition-all"
-                      style={{ background: 'linear-gradient(135deg, #ffd60a, #fb8500)' }}
-                    >
-                      Download Certificate
-                    </button>
-                  </div>
+                <div className="flex flex-wrap gap-3 mt-4">
+                  <button
+                    onClick={isCompleted ? handleDownloadCertificate : undefined}
+                    disabled={!isCompleted}
+                    title={isCompleted ? 'Download certificate' : 'Complete the program to unlock'}
+                    className="flex-1 min-w-[180px] py-3 rounded-xl font-mono font-bold text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2"
+                    style={
+                      isCompleted
+                        ? { background: 'linear-gradient(135deg, #ffd60a, #fb8500)', color: '#0a0a14' }
+                        : { background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.4)', cursor: 'not-allowed' }
+                    }
+                  >
+                    📄 Download Certificate
+                  </button>
+                  <button
+                    onClick={isCompleted ? () => setToast(`+${program.rewardPoints} XP awarded on completion!`) : undefined}
+                    disabled={!isCompleted}
+                    title={isCompleted ? `Claim +${program.rewardPoints} XP` : 'Complete the program to claim'}
+                    className="flex-1 min-w-[180px] py-3 rounded-xl font-mono font-bold text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2 disabled:cursor-not-allowed"
+                    style={
+                      isCompleted
+                        ? { background: 'linear-gradient(135deg, #00f5d4, #4cc9f0)', color: '#0a0a14' }
+                        : { background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.4)' }
+                    }
+                  >
+                    ⚡ Claim +{program.rewardPoints} XP
+                  </button>
+                </div>
+                {!isCompleted && (
+                  <p className="text-white/35 font-mono text-xs mt-2">Complete all steps to unlock certificate and claim XP.</p>
                 )}
               </div>
             )}
@@ -350,13 +371,28 @@ export default function ProgramDetailPage() {
                   {enrolling ? 'Enrolling...' : 'Enroll to access'}
                 </button>
               </div>
-            ) : (!program.episodes || program.episodes.length === 0) ? (
-              <div className="text-center py-16 text-white/30 font-mono text-sm">
-                <div className="text-4xl mb-4">🎬</div>
-                <p>No episodes available yet.</p>
-              </div>
             ) : (
               <div className="space-y-6">
+                {isAdmin && (
+                  <AdminEpisodeSection
+                    programId={id!}
+                    existingEpisodes={program.episodes ?? []}
+                    catColor={cat.color}
+                    onUpdate={() => {
+                      fetch(`/api/programs/${id}`)
+                        .then(r => r.json())
+                        .then(data => { if (!data.error) setProgram(data) })
+                        .catch(console.error)
+                    }}
+                  />
+                )}
+                {(!program.episodes || program.episodes.length === 0) && !isAdmin ? (
+                  <div className="text-center py-16 text-white/30 font-mono text-sm">
+                    <div className="text-4xl mb-4">🎬</div>
+                    <p>No episodes available yet.</p>
+                  </div>
+                ) : (program.episodes?.length ?? 0) > 0 ? (
+                  <>
                 {selectedEpisode && (() => {
                   const embedUrl = toYouTubeEmbedUrl(selectedEpisode.videoUrl)
                   return embedUrl ? (
@@ -404,6 +440,8 @@ export default function ProgramDetailPage() {
                     </button>
                   ))}
                 </div>
+                  </>
+                ) : null}
               </div>
             )}
           </div>

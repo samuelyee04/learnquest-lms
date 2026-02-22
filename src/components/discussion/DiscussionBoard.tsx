@@ -21,6 +21,7 @@ export default function DiscussionBoard({ programId, catColor, isAdmin = false, 
   const [loading, setLoading]     = useState(true)
   const [sending, setSending]     = useState(false)
   const [connected, setConnected]  = useState(false)
+  const [connectionAttempted, setConnectionAttempted] = useState(false)
   const [clearing, setClearing]   = useState(false)
   const bottomRef                  = useRef<HTMLDivElement>(null)
 
@@ -46,6 +47,7 @@ export default function DiscussionBoard({ programId, catColor, isAdmin = false, 
     const socket = getSocket()
     socket.emit('join-program', programId)
     setConnected(socket.connected)
+    const t = setTimeout(() => setConnectionAttempted(true), 3000)
 
     socket.on('message', (data: Discussion) => {
       setMessages(prev => {
@@ -62,6 +64,7 @@ export default function DiscussionBoard({ programId, catColor, isAdmin = false, 
     socket.on('disconnect', () => setConnected(false))
 
     return () => {
+      clearTimeout(t)
       socket.emit('leave-program', programId)
       socket.off('message')
       socket.off('message-liked')
@@ -154,7 +157,7 @@ export default function DiscussionBoard({ programId, catColor, isAdmin = false, 
             style={connected ? { boxShadow: '0 0 6px #4ade80' } : {}}
           />
           <span className="font-mono text-xs text-white/30">
-            {connected ? 'Live' : 'Connecting… (updates every few seconds)'}
+            {connected ? 'Live' : connectionAttempted ? 'Offline — updates every few seconds' : 'Connecting…'}
           </span>
         </div>
         {isAdmin && (

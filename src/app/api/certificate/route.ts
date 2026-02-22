@@ -96,6 +96,8 @@ export async function GET(req: Request) {
       min-height: 100vh;
       padding: 40px;
       font-family: 'Space Mono', monospace;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
     }
 
     .cert {
@@ -103,6 +105,8 @@ export async function GET(req: Request) {
       min-height: 620px;
       background: linear-gradient(145deg, #0d0d1a, #0a0a14);
       border: 2px solid ${catColor}44;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
       border-radius: 24px;
       padding: 60px 70px;
       position: relative;
@@ -311,9 +315,30 @@ export async function GET(req: Request) {
     }
 
     @media print {
-      body { background: white; padding: 0; }
-      .cert { box-shadow: none; }
-      .print-btn { display: none; }
+      body {
+        background: #06060f !important;
+        padding: 0 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      .cert {
+        box-shadow: none !important;
+        background: linear-gradient(145deg, #0d0d1a, #0a0a14) !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      .brand { color: #00f5d4 !important; -webkit-print-color-adjust: exact !important; }
+      .big-title, .program-name { color: #ffffff !important; }
+      .student-name { color: ${catColor} !important; }
+      .xp-amount { color: #ffd60a !important; }
+      .xp-badge { background: rgba(255,214,0,0.15) !important; border-color: rgba(255,214,0,0.4) !important; }
+      .cat-badge { background: ${catColor}22 !important; border-color: ${catColor}44 !important; color: ${catColor} !important; }
+      .cert-id, .cert-of, .certifies, .has-completed, .program-meta, .xp-label,
+      .signature-name, .signature-title { color: rgba(255,255,255,0.5) !important; }
+      .accent-bar { background: linear-gradient(90deg, ${catColor}, #4cc9f0, transparent) !important; }
+      .divider { background: linear-gradient(90deg, transparent, ${catColor}44, transparent) !important; }
+      .signature-line { background: rgba(255,255,255,0.2) !important; }
+      .print-btn { display: none !important; }
     }
   </style>
 </head>

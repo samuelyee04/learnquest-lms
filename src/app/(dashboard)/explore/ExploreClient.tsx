@@ -18,16 +18,18 @@ export default function ExplorePage() {
   const [programs, setPrograms]    = useState<Program[]>([])
   const [categories, setCategories] = useState<Category[]>([])
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
-  const [loading, setLoading]      = useState(true)
+  const [search, setSearch]        = useState(urlSearch)
+  const [loading, setLoading]       = useState(true)
   const [openProgram, setOpenProgram] = useState<Program | null>(null)
-  const [toast, setToast]          = useState<string | null>(null)
+  const [toast, setToast]           = useState<string | null>(null)
 
   const fetchPrograms = useCallback(async () => {
     setLoading(true)
     try {
       const params = new URLSearchParams()
       if (activeCategory) params.set('category', activeCategory)
-      if (urlSearch)      params.set('search', urlSearch)
+      const searchTerm = (typeof search === 'string' ? search : urlSearch)?.trim()
+      if (searchTerm) params.set('search', searchTerm)
 
       const [progRes, catRes] = await Promise.all([
         fetch(`/api/programs?${params}`),
@@ -47,7 +49,7 @@ export default function ExplorePage() {
     } finally {
       setLoading(false)
     }
-  }, [activeCategory, urlSearch])
+  }, [activeCategory, search, urlSearch])
 
   useEffect(() => {
     const t = setTimeout(fetchPrograms, 300) // debounce search
@@ -107,6 +109,30 @@ export default function ExplorePage() {
         </p>
       </div>
 
+      {/* Search bar — only above categories */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-2 pb-4">
+        <form
+          onSubmit={(e) => { e.preventDefault(); fetchPrograms(); }}
+          className="flex items-center gap-3 max-w-lg mx-auto bg-white/5 border border-white/10 rounded-2xl px-5 py-3"
+        >
+          <span className="text-white/30">🔍</span>
+          <input
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Search programs, topics..."
+            className="flex-1 bg-transparent border-none outline-none text-white font-mono text-sm placeholder:text-white/25"
+          />
+          {search && (
+            <button type="button" onClick={() => setSearch('')} className="text-white/25 hover:text-white text-xs font-mono">
+              ✕
+            </button>
+          )}
+          <button type="submit" className="px-4 py-2 rounded-xl text-xs font-mono font-bold uppercase tracking-wider bg-cyan-400/20 text-cyan-400 border border-cyan-400/30 hover:bg-cyan-400/30">
+            Search
+          </button>
+        </form>
+      </div>
+
       {/* Category bar */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
         <CategoryBar
@@ -137,6 +163,7 @@ export default function ExplorePage() {
                 key={program.id}
                 program={program}
                 showEnrollButton={false}
+                showExploreMeta
               />
             ))}
           </div>

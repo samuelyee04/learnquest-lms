@@ -6,11 +6,12 @@ import { Program } from '@/types'
 import { useRouter } from 'next/navigation'
 
 interface Props {
-  program:          Program
-  onEnroll?:        (programId: string) => void
-  onLeave?:         (programId: string) => void
+  program:           Program
+  onEnroll?:         (programId: string) => void
+  onLeave?:          (programId: string) => void
   showEnrollButton?: boolean  // false on Explore (card-only click)
   showLeaveButton?:  boolean  // true on My Learning for one-click leave
+  showExploreMeta?:  boolean  // true on Explore: duration + participants with labels, enrollment status, XP
 }
 
 const difficultyColor: Record<string, string> = {
@@ -25,7 +26,7 @@ const difficultyLabel: Record<string, string> = {
   ADVANCED:     'Advanced',
 }
 
-export default function ProgramCard({ program, onEnroll, onLeave, showEnrollButton = true, showLeaveButton = false }: Props) {
+export default function ProgramCard({ program, onEnroll, onLeave, showEnrollButton = true, showLeaveButton = false, showExploreMeta = false }: Props) {
   const router       = useRouter()
   const [loading, setLoading] = useState(false)
   const [leaving, setLeaving] = useState(false)
@@ -109,10 +110,24 @@ export default function ProgramCard({ program, onEnroll, onLeave, showEnrollButt
           {program.description}
         </p>
 
-        {/* Meta row */}
-        <div className="flex items-center gap-4 mb-4 text-xs font-mono text-white/35">
-          <span>👥 {program._count.enrollments.toLocaleString()}</span>
-          <span>⏱️ {program.duration}</span>
+        {/* Meta row: duration, participants, XP. On Explore show labels and enrollment status */}
+        <div className="space-y-2 mb-4">
+          <div className="flex items-center gap-4 text-xs font-mono text-white/35 flex-wrap">
+            <span title="Duration">
+              <span className="text-white/50">⏱️</span> {showExploreMeta ? 'Duration: ' : ''}{program.duration}
+            </span>
+            <span title="Participants">
+              <span className="text-white/50">👥</span> {showExploreMeta ? 'Participants: ' : ''}{program._count.enrollments.toLocaleString()}
+            </span>
+            <span title="XP reward">
+              <span className="text-white/50">⚡</span> {showExploreMeta ? 'Earn ' : '+'}{program.rewardPoints} XP
+            </span>
+          </div>
+          {showExploreMeta && (
+            <p className="text-xs font-mono text-white/40">
+              Status: {isEnrolled ? (isCompleted ? '✅ Completed' : '📋 Enrolled') : 'Not enrolled'}
+            </p>
+          )}
         </div>
 
         {/* Progress bar — only when enrolled and showEnrollButton (e.g. My Learning) */}
@@ -134,42 +149,44 @@ export default function ProgramCard({ program, onEnroll, onLeave, showEnrollButt
           </div>
         )}
 
-        {/* Enroll / Enrolled / Leave — hidden on Explore (showEnrollButton=false) */}
+        {/* Enroll / Enrolled / Leave — hidden on Explore (showEnrollButton=false). On My Learning (showLeaveButton) only show Leave, no grey Enrolled button */}
         {showEnrollButton && (
           <div className="flex gap-2">
-            <button
-              onClick={handleEnroll}
-              disabled={loading || isEnrolled}
-              className={`flex-1 py-3 rounded-xl text-xs font-bold font-mono uppercase tracking-widest transition-all duration-200 ${
-                isCompleted
-                  ? 'bg-white/5 text-white/30 cursor-default'
+            {!(showLeaveButton && isEnrolled && !isCompleted) && (
+              <button
+                onClick={handleEnroll}
+                disabled={loading || isEnrolled}
+                className={`flex-1 py-3 rounded-xl text-xs font-bold font-mono uppercase tracking-widest transition-all duration-200 ${
+                  isCompleted
+                    ? 'bg-white/5 text-white/30 cursor-default'
+                    : isEnrolled
+                    ? 'bg-white/5 text-white/40 border border-white/10 cursor-not-allowed'
+                    : 'text-[#0a0a14] shadow-lg hover:opacity-90 active:scale-95'
+                }`}
+                style={
+                  !isCompleted && !isEnrolled
+                    ? { background: `linear-gradient(135deg, ${cat.color}, ${cat.color}cc)` }
+                    : isEnrolled
+                    ? { background: 'rgba(255,255,255,0.06)' }
+                    : {}
+                }
+              >
+                {loading
+                  ? '...'
+                  : isCompleted
+                  ? '✅ Completed'
                   : isEnrolled
-                  ? 'bg-white/5 text-white/40 border border-white/10 cursor-not-allowed'
-                  : 'text-[#0a0a14] shadow-lg hover:opacity-90 active:scale-95'
-              }`}
-              style={
-                !isCompleted && !isEnrolled
-                  ? { background: `linear-gradient(135deg, ${cat.color}, ${cat.color}cc)` }
-                  : isEnrolled
-                  ? { background: 'rgba(255,255,255,0.06)' }
-                  : {}
-              }
-            >
-              {loading
-                ? '...'
-                : isCompleted
-                ? '✅ Completed'
-                : isEnrolled
-                ? '✓ Enrolled'
-                : '⚡ Enroll Now'}
-            </button>
+                  ? '✓ Enrolled'
+                  : '⚡ Enroll Now'}
+              </button>
+            )}
             {showLeaveButton && isEnrolled && !isCompleted && (
               <button
                 onClick={handleLeave}
                 disabled={leaving}
-                className="px-4 py-3 rounded-xl text-xs font-bold font-mono uppercase tracking-widest text-white/60 hover:text-red-400 hover:bg-red-500/10 border border-white/10 transition-all disabled:opacity-50"
+                className="w-full py-3 rounded-xl text-xs font-bold font-mono uppercase tracking-widest text-white/60 hover:text-red-400 hover:bg-red-500/10 border border-white/10 transition-all disabled:opacity-50"
               >
-                {leaving ? '...' : 'Leave'}
+                {leaving ? '...' : 'Leave program'}
               </button>
             )}
           </div>

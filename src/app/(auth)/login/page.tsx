@@ -23,7 +23,7 @@ export default function LoginPage() {
         redirect: false,
       })
 
-      if (!result?.ok) {
+      if (!result || result.ok !== true) {
         setError(
           result?.error === 'CredentialsSignin' || result?.error
             ? 'Invalid email or password. Please try again.'
