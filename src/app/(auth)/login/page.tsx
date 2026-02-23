@@ -54,7 +54,7 @@ export default function LoginPage() {
           <h1 className="font-mono font-black text-2xl tracking-widest bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
             LEARNQUEST
           </h1>
-          <p className="font-mono text-white/30 text-xs mt-2 tracking-widest">
+          <p className="font-mono text-white text-xs mt-2 tracking-widest">
             XP &bull; REWARDS &bull; MASTERY
           </p>
         </div>
@@ -68,7 +68,7 @@ export default function LoginPage() {
               type="email"
               value={form.email}
               onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-              placeholder="you@example.com"
+              placeholder="user@example.com"
               required
               className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm font-mono outline-none placeholder:text-white/20 focus:border-cyan-400/40 transition-colors"
             />
@@ -110,7 +110,7 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <p className="text-center font-mono text-xs text-white/25 mt-6">
+        <p className="text-center font-mono text-xs text-white mt-6">
           No account?{' '}
           <Link href="/register" className="text-cyan-400 hover:text-cyan-300 transition-colors">
             Register here

@@ -5,7 +5,7 @@ import { useEffect } from 'react'
 
 interface Props {
   message: string
-  onDone:  () => void
+  onDone: () => void
   duration?: number
 }
 

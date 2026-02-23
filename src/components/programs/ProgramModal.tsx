@@ -116,7 +116,7 @@ export default function ProgramModal({ program, onClose, onEnroll, onUpdate }: P
               <h2 className="text-xl font-mono font-bold text-white leading-snug">
                 {program.title}
               </h2>
-              <div className="flex items-center gap-5 mt-3 text-xs font-mono text-white/35">
+              <div className="flex items-center gap-5 mt-3 text-xs font-mono text-white">
                 <span>👥 {(program._count?.enrollments ?? 0).toLocaleString()} students</span>
                 <span>⏱️ {program.duration}</span>
                 <span className="text-yellow-400 font-bold">⚡ +{program.rewardPoints} XP</span>
@@ -124,7 +124,7 @@ export default function ProgramModal({ program, onClose, onEnroll, onUpdate }: P
             </div>
             <button
               onClick={onClose}
-              className="w-9 h-9 flex items-center justify-center rounded-lg bg-white/5 border border-white/10 text-white/40 hover:text-white hover:bg-white/10 transition-all flex-shrink-0"
+              className="w-9 h-9 flex items-center justify-center rounded-lg bg-white/5 border border-white/10 text-white hover:text-white hover:bg-white/10 transition-all flex-shrink-0"
             >
               ✕
             </button>
@@ -137,8 +137,8 @@ export default function ProgramModal({ program, onClose, onEnroll, onUpdate }: P
                 key={t.id}
                 onClick={() => setTab(t.id)}
                 className={`pb-3 px-4 text-xs font-mono font-bold uppercase tracking-widest transition-all border-b-2 ${tab === t.id
-                    ? 'border-b-2 text-[var(--cat)]'
-                    : 'border-transparent text-white/30 hover:text-white/60'
+                  ? 'border-b-2 text-[var(--cat)]'
+                  : 'border-transparent text-white hover:text-white/60'
                   }`}
                 style={{ '--cat': cat.color, borderBottomColor: tab === t.id ? cat.color : 'transparent' } as any}
               >
@@ -174,12 +174,12 @@ export default function ProgramModal({ program, onClose, onEnroll, onUpdate }: P
                 <div className="bg-white/4 rounded-xl p-5">
                   <h4 className="text-xs font-mono font-bold uppercase tracking-widest mb-3"
                     style={{ color: cat.color }}>About</h4>
-                  <p className="text-white/55 text-xs font-mono leading-relaxed whitespace-pre-wrap">{program.about}</p>
+                  <p className="text-white text-xs font-mono leading-relaxed whitespace-pre-wrap">{program.about}</p>
                 </div>
                 <div className="bg-white/4 rounded-xl p-5">
                   <h4 className="text-xs font-mono font-bold uppercase tracking-widest mb-3"
                     style={{ color: cat.color }}>Outcomes</h4>
-                  <p className="text-white/55 text-xs font-mono leading-relaxed whitespace-pre-wrap">{program.outcome}</p>
+                  <p className="text-white text-xs font-mono leading-relaxed whitespace-pre-wrap">{program.outcome}</p>
                 </div>
               </div>
 
@@ -264,11 +264,11 @@ export default function ProgramModal({ program, onClose, onEnroll, onUpdate }: P
           {tab === 'quiz' && (
             <div>
               {!quiz ? (
-                <div className="text-center py-16 text-white/30 font-mono text-sm">
+                <div className="text-center py-16 text-white font-mono text-sm">
                   Loading quiz...
                 </div>
               ) : quiz.questions.length === 0 ? (
-                <div className="text-center py-16 text-white/30 font-mono text-sm">
+                <div className="text-center py-16 text-white font-mono text-sm">
                   No quiz available for this program yet.
                 </div>
               ) : (

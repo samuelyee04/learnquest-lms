@@ -6,35 +6,35 @@ import { Program } from '@/types'
 import { useRouter } from 'next/navigation'
 
 interface Props {
-  program:           Program
-  onEnroll?:         (programId: string) => void
-  onLeave?:          (programId: string) => void
+  program: Program
+  onEnroll?: (programId: string) => void
+  onLeave?: (programId: string) => void
   showEnrollButton?: boolean  // false on Explore (card-only click)
-  showLeaveButton?:  boolean  // true on My Learning for one-click leave
-  showExploreMeta?:  boolean  // true on Explore: duration + participants with labels, enrollment status, XP
+  showLeaveButton?: boolean  // true on My Learning for one-click leave
+  showExploreMeta?: boolean  // true on Explore: duration + participants with labels, enrollment status, XP
 }
 
 const difficultyColor: Record<string, string> = {
-  BEGINNER:     '#00f5d4',
+  BEGINNER: '#00f5d4',
   INTERMEDIATE: '#ffd60a',
-  ADVANCED:     '#f72585',
+  ADVANCED: '#f72585',
 }
 
 const difficultyLabel: Record<string, string> = {
-  BEGINNER:     'Beginner',
+  BEGINNER: 'Beginner',
   INTERMEDIATE: 'Intermediate',
-  ADVANCED:     'Advanced',
+  ADVANCED: 'Advanced',
 }
 
 export default function ProgramCard({ program, onEnroll, onLeave, showEnrollButton = true, showLeaveButton = false, showExploreMeta = false }: Props) {
-  const router       = useRouter()
+  const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [leaving, setLeaving] = useState(false)
-  const cat         = program.category
-  const enrollment  = program.enrollment
-  const isEnrolled  = !!enrollment
+  const cat = program.category
+  const enrollment = program.enrollment
+  const isEnrolled = !!enrollment
   const isCompleted = enrollment?.completed ?? false
-  const progress    = enrollment?.progress ?? 0
+  const progress = enrollment?.progress ?? 0
 
   const handleEnroll = async (e: React.MouseEvent) => {
     e.stopPropagation()
@@ -106,25 +106,25 @@ export default function ProgramCard({ program, onEnroll, onLeave, showEnrollButt
         </h3>
 
         {/* Description */}
-        <p className="text-white/40 text-xs font-mono leading-relaxed mb-4 line-clamp-2">
+        <p className="text-white text-xs font-mono leading-relaxed mb-4 line-clamp-2">
           {program.description}
         </p>
 
         {/* Meta row: duration, participants, XP. On Explore show labels and enrollment status */}
         <div className="space-y-2 mb-4">
-          <div className="flex items-center gap-4 text-xs font-mono text-white/35 flex-wrap">
+          <div className="flex items-center gap-4 text-xs font-mono text-white flex-wrap">
             <span title="Duration">
-              <span className="text-white/50">⏱️</span> {showExploreMeta ? 'Duration: ' : ''}{program.duration}
+              <span className="text-white">⏱️</span> {showExploreMeta ? 'Duration: ' : ''}{program.duration}
             </span>
             <span title="Participants">
-              <span className="text-white/50">👥</span> {showExploreMeta ? 'Participants: ' : ''}{program._count.enrollments.toLocaleString()}
+              <span className="text-white">👥</span> {showExploreMeta ? 'Participants: ' : ''}{program._count.enrollments.toLocaleString()}
             </span>
             <span title="XP reward">
-              <span className="text-white/50">⚡</span> {showExploreMeta ? 'Earn ' : '+'}{program.rewardPoints} XP
+              <span className="text-white">⚡</span> {showExploreMeta ? 'Earn ' : '+'}{program.rewardPoints} XP
             </span>
           </div>
           {showExploreMeta && (
-            <p className="text-xs font-mono text-white/40">
+            <p className="text-xs font-mono text-white">
               Status: {isEnrolled ? (isCompleted ? '✅ Completed' : '📋 Enrolled') : 'Not enrolled'}
             </p>
           )}
@@ -134,7 +134,7 @@ export default function ProgramCard({ program, onEnroll, onLeave, showEnrollButt
         {showEnrollButton && isEnrolled && (
           <div className="mb-4">
             <div className="flex justify-between text-xs font-mono mb-1.5">
-              <span className="text-white/35">PROGRESS</span>
+              <span className="text-white">PROGRESS</span>
               <span style={{ color: cat.color }}>{progress}%</span>
             </div>
             <div className="h-1.5 bg-white/8 rounded-full overflow-hidden">
@@ -156,35 +156,34 @@ export default function ProgramCard({ program, onEnroll, onLeave, showEnrollButt
               <button
                 onClick={handleEnroll}
                 disabled={loading || isEnrolled}
-                className={`flex-1 py-3 rounded-xl text-xs font-bold font-mono uppercase tracking-widest transition-all duration-200 ${
-                  isCompleted
-                    ? 'bg-white/5 text-white/30 cursor-default'
-                    : isEnrolled
-                    ? 'bg-white/5 text-white/40 border border-white/10 cursor-not-allowed'
+                className={`flex-1 py-3 rounded-xl text-xs font-bold font-mono uppercase tracking-widest transition-all duration-200 ${isCompleted
+                  ? 'bg-white/5 text-white cursor-default'
+                  : isEnrolled
+                    ? 'bg-white/5 text-white border border-white/10 cursor-not-allowed'
                     : 'text-[#0a0a14] shadow-lg hover:opacity-90 active:scale-95'
-                }`}
+                  }`}
                 style={
                   !isCompleted && !isEnrolled
                     ? { background: `linear-gradient(135deg, ${cat.color}, ${cat.color}cc)` }
                     : isEnrolled
-                    ? { background: 'rgba(255,255,255,0.06)' }
-                    : {}
+                      ? { background: 'rgba(255,255,255,0.06)' }
+                      : {}
                 }
               >
                 {loading
                   ? '...'
                   : isCompleted
-                  ? '✅ Completed'
-                  : isEnrolled
-                  ? '✓ Enrolled'
-                  : '⚡ Enroll Now'}
+                    ? '✅ Completed'
+                    : isEnrolled
+                      ? '✓ Enrolled'
+                      : '⚡ Enroll Now'}
               </button>
             )}
             {showLeaveButton && isEnrolled && !isCompleted && (
               <button
                 onClick={handleLeave}
                 disabled={leaving}
-                className="w-full py-3 rounded-xl text-xs font-bold font-mono uppercase tracking-widest text-white/60 hover:text-red-400 hover:bg-red-500/10 border border-white/10 transition-all disabled:opacity-50"
+                className="w-full py-3 rounded-xl text-xs font-bold font-mono uppercase tracking-widest text-white hover:text-red-400 hover:bg-red-500/10 border border-white/10 transition-all disabled:opacity-50"
               >
                 {leaving ? '...' : 'Leave program'}
               </button>

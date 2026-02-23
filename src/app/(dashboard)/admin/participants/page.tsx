@@ -19,11 +19,11 @@ interface Participant {
 
 export default function AdminParticipantsPage() {
   const { data: session } = useSession()
-  const [programs, setPrograms]           = useState<ProgramOption[]>([])
+  const [programs, setPrograms] = useState<ProgramOption[]>([])
   const [selectedProgram, setSelectedProgram] = useState<string>('')
-  const [participants, setParticipants]   = useState<Participant[]>([])
-  const [loading, setLoading]             = useState(false)
-  const [removing, setRemoving]           = useState<string | null>(null)
+  const [participants, setParticipants] = useState<Participant[]>([])
+  const [loading, setLoading] = useState(false)
+  const [removing, setRemoving] = useState<string | null>(null)
 
   useEffect(() => {
     fetch('/api/programs')
@@ -66,7 +66,7 @@ export default function AdminParticipantsPage() {
     <div className="min-h-screen bg-[#06060f] text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <h1 className="font-mono font-black text-3xl text-white mb-2">Participants</h1>
-        <p className="font-mono text-white/35 text-sm mb-8">View and manage enrolled students by program</p>
+        <p className="font-mono text-white text-sm mb-8">View and manage enrolled students by program</p>
 
         <select
           value={selectedProgram}
@@ -80,7 +80,7 @@ export default function AdminParticipantsPage() {
         </select>
 
         {!selectedProgram && (
-          <div className="text-center py-20 text-white/25 font-mono">
+          <div className="text-center py-20 text-white font-mono">
             <div className="text-5xl mb-4">👥</div>
             <p className="text-lg font-bold">Select a program</p>
             <p className="text-sm mt-1">Choose a program above to view its participants</p>
@@ -96,7 +96,7 @@ export default function AdminParticipantsPage() {
         )}
 
         {selectedProgram && !loading && participants.length === 0 && (
-          <div className="text-center py-20 text-white/25 font-mono">
+          <div className="text-center py-20 text-white font-mono">
             <div className="text-5xl mb-4">📭</div>
             <p className="text-lg font-bold">No participants</p>
             <p className="text-sm mt-1">No one has enrolled in this program yet</p>
@@ -109,7 +109,7 @@ export default function AdminParticipantsPage() {
               <span className="font-mono font-bold text-white text-sm">
                 {participants.length} participant{participants.length !== 1 ? 's' : ''}
               </span>
-              <span className="font-mono text-white/35 text-xs">
+              <span className="font-mono text-white text-xs">
                 {participants.filter(p => p.completed).length} completed
               </span>
             </div>
@@ -121,7 +121,7 @@ export default function AdminParticipantsPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-mono font-bold text-white text-xs truncate">{p.user.name}</p>
-                    <p className="font-mono text-white/35 text-xs truncate">{p.user.email}</p>
+                    <p className="font-mono text-white text-xs truncate">{p.user.email}</p>
                   </div>
                   <div className="hidden sm:flex flex-col items-end gap-1.5 w-28">
                     <span className="font-mono text-xs font-bold text-cyan-400">

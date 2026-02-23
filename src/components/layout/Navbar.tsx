@@ -70,8 +70,8 @@ export default function Navbar() {
                     key={link.href}
                     href={link.href}
                     className={`px-4 py-2 rounded-lg text-xs font-bold font-mono uppercase tracking-wider transition-all ${pathname.startsWith(link.href)
-                        ? 'bg-cyan-400/15 border border-cyan-400/40 text-cyan-400'
-                        : 'text-white/50 hover:text-white hover:bg-white/5 border border-transparent'
+                      ? 'bg-cyan-400/15 border border-cyan-400/40 text-cyan-400'
+                      : 'text-white hover:text-white hover:bg-white/5 border border-transparent'
                       }`}
                   >
                     {link.label}
@@ -98,7 +98,7 @@ export default function Navbar() {
                         <p className="text-white text-sm font-bold font-mono truncate">
                           {session.user?.name}
                         </p>
-                        <p className="text-white/40 text-xs font-mono truncate mt-0.5">
+                        <p className="text-white text-xs font-mono truncate mt-0.5">
                           {session.user?.email}
                         </p>
                         {isAdmin && (
@@ -110,7 +110,7 @@ export default function Navbar() {
 
                       <div className="px-4 py-3 border-b border-white/10">
                         <div className="flex justify-between items-center">
-                          <span className="text-white/35 font-mono text-xs">
+                          <span className="text-white font-mono text-xs">
                             Level {(session.user as any).level ?? 1}
                           </span>
                           <span className="text-cyan-400 font-mono text-xs font-bold">
@@ -127,7 +127,7 @@ export default function Navbar() {
 
                       <button
                         onClick={() => { setDropdownOpen(false); signOut({ callbackUrl: '/login' }) }}
-                        className="w-full text-left px-4 py-3 text-sm text-white/50 hover:text-white hover:bg-white/5 font-mono transition-colors rounded-b-xl"
+                        className="w-full text-left px-4 py-3 text-sm text-white hover:text-white hover:bg-white/5 font-mono transition-colors rounded-b-xl"
                       >
                         Sign Out
                       </button>
@@ -140,7 +140,7 @@ export default function Navbar() {
             <div className="hidden md:flex items-center gap-2 ml-auto">
               <Link
                 href="/login"
-                className="px-4 py-2 rounded-lg text-xs font-bold font-mono uppercase tracking-wider text-white/50 hover:text-white hover:bg-white/5 border border-transparent transition-all"
+                className="px-4 py-2 rounded-lg text-xs font-bold font-mono uppercase tracking-wider text-white hover:text-white hover:bg-white/5 border border-transparent transition-all"
               >
                 Sign In
               </Link>
@@ -173,8 +173,8 @@ export default function Navbar() {
                     href={link.href}
                     onClick={() => setMenuOpen(false)}
                     className={`flex items-center px-4 py-3 rounded-xl text-sm font-mono font-bold transition-all ${pathname.startsWith(link.href)
-                        ? 'bg-cyan-400/15 text-cyan-400 border border-cyan-400/25'
-                        : 'text-white/50 hover:text-white hover:bg-white/5'
+                      ? 'bg-cyan-400/15 text-cyan-400 border border-cyan-400/25'
+                      : 'text-white hover:text-white hover:bg-white/5'
                       }`}
                   >
                     {link.label}
@@ -186,7 +186,7 @@ export default function Navbar() {
                     <p className="text-white text-sm font-bold font-mono">
                       {session?.user?.name}
                     </p>
-                    <p className="text-white/35 text-xs font-mono mt-0.5">
+                    <p className="text-white text-xs font-mono mt-0.5">
                       {((session?.user as any)?.xpPoints ?? 0).toLocaleString()} XP
                       &nbsp;&middot;&nbsp;
                       Level {(session?.user as any)?.level ?? 1}
@@ -194,7 +194,7 @@ export default function Navbar() {
                   </div>
                   <button
                     onClick={() => { setMenuOpen(false); signOut({ callbackUrl: '/login' }) }}
-                    className="w-full text-left px-4 py-3 rounded-xl text-sm font-mono text-white/40 hover:text-white hover:bg-white/5 transition-colors"
+                    className="w-full text-left px-4 py-3 rounded-xl text-sm font-mono text-white hover:text-white hover:bg-white/5 transition-colors"
                   >
                     Sign Out
                   </button>
@@ -205,7 +205,7 @@ export default function Navbar() {
                 <Link
                   href="/login"
                   onClick={() => setMenuOpen(false)}
-                  className="flex items-center px-4 py-3 rounded-xl text-sm font-mono font-bold text-white/50 hover:text-white hover:bg-white/5"
+                  className="flex items-center px-4 py-3 rounded-xl text-sm font-mono font-bold text-white hover:text-white hover:bg-white/5"
                 >
                   Sign In
                 </Link>

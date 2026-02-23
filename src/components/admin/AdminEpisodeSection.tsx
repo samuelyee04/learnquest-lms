@@ -96,7 +96,7 @@ export default function AdminEpisodeSection({ programId, existingEpisodes, catCo
 
       {existingEpisodes.length > 0 && (
         <div className="space-y-2">
-          <p className="text-white/50 font-mono text-xs">Existing episodes ({existingEpisodes.length})</p>
+          <p className="text-white font-mono text-xs">Existing episodes ({existingEpisodes.length})</p>
           <ul className="space-y-2">
             {existingEpisodes.map((ep, i) => (
               <li
@@ -106,11 +106,11 @@ export default function AdminEpisodeSection({ programId, existingEpisodes, catCo
                 <div className="min-w-0 flex-1">
                   <p className="font-mono text-sm text-white truncate">{ep.title}</p>
                   {ep.videoUrl && (
-                    <p className="font-mono text-xs text-white/40 truncate mt-1" title={ep.videoUrl}>
+                    <p className="font-mono text-xs text-white truncate mt-1" title={ep.videoUrl}>
                       URL: {ep.videoUrl}
                     </p>
                   )}
-                  {ep.duration && <p className="font-mono text-xs text-white/35 mt-0.5">Duration: {ep.duration}</p>}
+                  {ep.duration && <p className="font-mono text-xs text-white mt-0.5">Duration: {ep.duration}</p>}
                 </div>
                 <button
                   type="button"
@@ -129,8 +129,8 @@ export default function AdminEpisodeSection({ programId, existingEpisodes, catCo
       {drafts.map((d, i) => (
         <div key={i} className="p-4 rounded-xl border border-white/10 bg-white/4 space-y-3">
           <div className="flex justify-between items-center">
-            <span className="font-mono text-xs text-white/50">New episode {i + 1}</span>
-            <button type="button" onClick={() => removeDraft(i)} className="text-white/40 hover:text-red-400 text-xs font-mono">Remove</button>
+            <span className="font-mono text-xs text-white">New episode {i + 1}</span>
+            <button type="button" onClick={() => removeDraft(i)} className="text-white hover:text-red-400 text-xs font-mono">Remove</button>
           </div>
           <input
             value={d.title}
@@ -157,7 +157,7 @@ export default function AdminEpisodeSection({ programId, existingEpisodes, catCo
         <button
           type="button"
           onClick={addDraft}
-          className="px-4 py-2 rounded-xl text-xs font-mono font-bold uppercase border border-white/20 text-white/60 hover:text-white hover:bg-white/5"
+          className="px-4 py-2 rounded-xl text-xs font-mono font-bold uppercase border border-white/20 text-white hover:text-white hover:bg-white/5"
         >
           + Add episode
         </button>

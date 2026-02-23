@@ -182,7 +182,7 @@ export default function AdminQuizSection({ programId, existingQuizzes, catColor,
               style={
                 selectedQuizIndex === i
                   ? { background: `${catColor}22`, border: `1px solid ${catColor}44`, color: catColor }
-                  : { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)' }
+                  : { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(250, 250, 250, 1)' }
               }
             >
               {q.title || `Quiz ${i + 1}`} ({q.questions.length}Q)
@@ -195,11 +195,11 @@ export default function AdminQuizSection({ programId, existingQuizzes, catColor,
       {creatingNewQuiz && (
         <div className="p-4 rounded-xl border border-white/10 bg-white/4 space-y-3">
           <div className="flex items-center justify-between">
-            <p className="text-white/50 font-mono text-xs font-bold">Creating New Quiz Card</p>
+            <p className="text-white font-mono text-xs font-bold">Creating New Quiz Card</p>
             <button
               type="button"
               onClick={() => { setCreatingNewQuiz(false); setDrafts([]) }}
-              className="text-white/40 hover:text-white text-xs font-mono"
+              className="text-white hover:text-white text-xs font-mono"
             >
               Cancel
             </button>
@@ -220,7 +220,7 @@ export default function AdminQuizSection({ programId, existingQuizzes, catColor,
             {drafts.map((d, i) => (
               <li key={i} className="flex items-center justify-between gap-3 p-3 bg-white/5 rounded-lg border border-white/6">
                 <p className="font-mono text-sm text-white truncate flex-1">{d.text}</p>
-                <button type="button" onClick={() => removeDraft(i)} className="text-white/40 hover:text-red-400 text-xs font-mono">Remove</button>
+                <button type="button" onClick={() => removeDraft(i)} className="text-white hover:text-red-400 text-xs font-mono">Remove</button>
               </li>
             ))}
           </ul>
@@ -238,7 +238,7 @@ export default function AdminQuizSection({ programId, existingQuizzes, catColor,
 
       {!creatingNewQuiz && questions.length > 0 && (
         <div className="space-y-2">
-          <p className="text-white/50 font-mono text-xs">
+          <p className="text-white font-mono text-xs">
             Existing questions in {selectedQuiz?.title || `Quiz ${selectedQuizIndex + 1}`} ({questions.length})
           </p>
           <ul className="space-y-2">
@@ -249,7 +249,7 @@ export default function AdminQuizSection({ programId, existingQuizzes, catColor,
               >
                 <div className="min-w-0 flex-1">
                   <p className="font-mono text-sm text-white truncate">{q.text}</p>
-                  <p className="font-mono text-xs text-white/40 mt-1">
+                  <p className="font-mono text-xs text-white mt-1">
                     Options: {q.options?.join(' · ') ?? '—'}
                   </p>
                 </div>
@@ -268,7 +268,7 @@ export default function AdminQuizSection({ programId, existingQuizzes, catColor,
       )}
 
       <form onSubmit={addToDrafts} className="space-y-4 p-5 rounded-xl border border-white/10 bg-white/4">
-        <p className="text-white/50 font-mono text-xs">
+        <p className="text-white font-mono text-xs">
           {creatingNewQuiz
             ? 'Add questions to new quiz card'
             : 'Add question to list (then click Save all above)'}
@@ -313,12 +313,12 @@ export default function AdminQuizSection({ programId, existingQuizzes, catColor,
               </div>
             ))}
           </div>
-          <p className="text-white/35 text-xs font-mono mt-2">Select the radio button next to the correct answer.</p>
+          <p className="text-white text-xs font-mono mt-2">Select the radio button next to the correct answer.</p>
         </div>
         {error && <p className="text-red-400 font-mono text-xs">{error}</p>}
         <button
           type="submit"
-          className="w-full py-3 rounded-xl font-mono font-bold text-xs uppercase tracking-widest transition-all hover:opacity-90 border border-white/20 text-white/70"
+          className="w-full py-3 rounded-xl font-mono font-bold text-xs uppercase tracking-widest transition-all hover:opacity-90 border border-white text-white"
           style={{ background: 'transparent' }}
         >
           Add to list

@@ -16,7 +16,7 @@ export default async function Home() {
         <h1 className="text-4xl sm:text-6xl font-black font-mono tracking-tight bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-500 bg-clip-text text-transparent">
           LearnQuest
         </h1>
-        <p className="mt-4 text-lg sm:text-xl text-white/60 max-w-xl font-mono">
+        <p className="mt-4 text-lg sm:text-xl text-white max-w-xl font-mono">
           A gamified learning management system. Explore programs, earn XP,
           take quizzes, and level up your skills.
         </p>
@@ -46,14 +46,14 @@ export default async function Home() {
             <div key={f.title} className="bg-white/5 border border-white/10 rounded-xl p-6 text-center">
               <div className="text-3xl mb-3">{f.icon}</div>
               <h3 className="font-bold font-mono text-white text-sm uppercase tracking-wider">{f.title}</h3>
-              <p className="mt-2 text-white/50 text-sm font-mono">{f.desc}</p>
+              <p className="mt-2 text-white text-sm font-mono">{f.desc}</p>
             </div>
           ))}
         </div>
       </section>
 
       <footer className="border-t border-white/8 py-6 text-center">
-        <p className="text-white/30 text-xs font-mono">
+        <p className="text-white text-xs font-mono">
           LearnQuest LMS &copy; {new Date().getFullYear()}
         </p>
       </footer>

@@ -8,9 +8,9 @@ import Toast from '@/components/ui/Toast'
 
 export default function MyLearningPage() {
   const [enrollments, setEnrollments] = useState<Enrollment[]>([])
-  const [loading, setLoading]         = useState(true)
+  const [loading, setLoading] = useState(true)
   const [openProgram, setOpenProgram] = useState<any>(null)
-  const [toast, setToast]             = useState<string | null>(null)
+  const [toast, setToast] = useState<string | null>(null)
 
   const handleLeave = async (programId: string) => {
     const res = await fetch('/api/enrollments', {
@@ -37,17 +37,17 @@ export default function MyLearningPage() {
       .finally(() => setLoading(false))
   }, [])
 
-  const totalXP   = enrollments.filter(e => e.completed).reduce((s, e) => s + (e.program?.rewardPoints ?? 0), 0)
+  const totalXP = enrollments.filter(e => e.completed).reduce((s, e) => s + (e.program?.rewardPoints ?? 0), 0)
   const completed = enrollments.filter(e => e.completed).length
   const avgProgress = enrollments.length
     ? Math.round(enrollments.reduce((s, e) => s + e.progress, 0) / enrollments.length)
     : 0
 
   const stats = [
-    { icon: '📚', label: 'Enrolled',   value: enrollments.length, color: '#00f5d4' },
-    { icon: '✅', label: 'Completed',  value: completed,           color: '#4cc9f0' },
-    { icon: '⚡', label: 'XP Earned',  value: totalXP.toLocaleString(), color: '#ffd60a' },
-    { icon: '📈', label: 'Avg Progress', value: `${avgProgress}%`,  color: '#f72585' },
+    { icon: '📚', label: 'Enrolled', value: enrollments.length, color: '#00f5d4' },
+    { icon: '✅', label: 'Completed', value: completed, color: '#4cc9f0' },
+    { icon: '⚡', label: 'XP Earned', value: totalXP.toLocaleString(), color: '#ffd60a' },
+    { icon: '📈', label: 'Avg Progress', value: `${avgProgress}%`, color: '#f72585' },
   ]
 
   return (
@@ -56,7 +56,7 @@ export default function MyLearningPage() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <h1 className="font-mono font-black text-3xl text-white mb-2">My Learning</h1>
-        <p className="font-mono text-white/35 text-sm mb-8">Track your progress and claim rewards</p>
+        <p className="font-mono text-white text-sm mb-8">Track your progress and claim rewards</p>
 
         {/* Stats row */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
@@ -70,7 +70,7 @@ export default function MyLearningPage() {
               <div className="font-mono font-black text-2xl mb-1" style={{ color: s.color }}>
                 {s.value}
               </div>
-              <div className="font-mono text-xs text-white/35 uppercase tracking-widest">{s.label}</div>
+              <div className="font-mono text-xs text-white uppercase tracking-widest">{s.label}</div>
             </div>
           ))}
         </div>
@@ -83,7 +83,7 @@ export default function MyLearningPage() {
             ))}
           </div>
         ) : enrollments.length === 0 ? (
-          <div className="text-center py-20 text-white/25 font-mono">
+          <div className="text-center py-20 text-white font-mono">
             <div className="text-5xl mb-4">🚀</div>
             <p className="text-lg font-bold">No programs yet!</p>
             <p className="text-sm mt-1">Head to Explore to start your journey</p>
@@ -106,8 +106,8 @@ export default function MyLearningPage() {
         <ProgramModal
           program={openProgram}
           onClose={() => setOpenProgram(null)}
-          onEnroll={async () => {}}
-          onUpdate={() => {}}
+          onEnroll={async () => { }}
+          onUpdate={() => { }}
         />
       )}
     </div>

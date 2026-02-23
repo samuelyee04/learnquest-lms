@@ -5,8 +5,8 @@ import Link from 'next/link'
 import { signIn } from 'next-auth/react'
 
 export default function RegisterPage() {
-  const [form, setForm]     = useState({ name: '', email: '', password: '', confirm: '' })
-  const [error, setError]   = useState<string | null>(null)
+  const [form, setForm] = useState({ name: '', email: '', password: '', confirm: '' })
+  const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -28,8 +28,8 @@ export default function RegisterPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name:     form.name,
-          email:    form.email,
+          name: form.name,
+          email: form.email,
           password: form.password,
         }),
       })
@@ -42,7 +42,7 @@ export default function RegisterPage() {
       }
 
       const result = await signIn('credentials', {
-        email:    form.email,
+        email: form.email,
         password: form.password,
         redirect: false,
       })
@@ -61,10 +61,10 @@ export default function RegisterPage() {
   }
 
   const fields = [
-    { label: 'Full Name',        key: 'name',     type: 'text',     placeholder: 'Alex Rivera' },
-    { label: 'Email',            key: 'email',    type: 'email',    placeholder: 'you@example.com' },
-    { label: 'Password',         key: 'password', type: 'password', placeholder: '8+ characters' },
-    { label: 'Confirm Password', key: 'confirm',  type: 'password', placeholder: 'Re-enter password' },
+    { label: 'Full Name', key: 'name', type: 'text', placeholder: 'Samuel' },
+    { label: 'Email', key: 'email', type: 'email', placeholder: 'user@example.com' },
+    { label: 'Password', key: 'password', type: 'password', placeholder: '8+ characters' },
+    { label: 'Confirm Password', key: 'confirm', type: 'password', placeholder: 'Re-enter password' },
   ]
 
   return (
@@ -78,7 +78,7 @@ export default function RegisterPage() {
           <h1 className="font-mono font-black text-2xl tracking-widest bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
             JOIN LEARNQUEST
           </h1>
-          <p className="font-mono text-white/30 text-xs mt-2">Start your learning journey</p>
+          <p className="font-mono text-white text-xs mt-2">Start your learning journey</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -114,7 +114,7 @@ export default function RegisterPage() {
           </button>
         </form>
 
-        <p className="text-center font-mono text-xs text-white/25 mt-6">
+        <p className="text-center font-mono text-xs text-white mt-6">
           Already have an account?{' '}
           <Link href="/login" className="text-cyan-400 hover:text-cyan-300 transition-colors">
             Sign in

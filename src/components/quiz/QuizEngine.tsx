@@ -75,7 +75,7 @@ export default function QuizEngine({ quiz, catColor, onComplete }: Props) {
         <h3 className="font-mono font-bold text-white text-xl mb-2">
           {quiz.questions.length} Questions
         </h3>
-        <p className="text-white/40 font-mono text-sm mb-8 max-w-sm mx-auto">
+        <p className="text-white font-mono text-sm mb-8 max-w-sm mx-auto">
           You need to answer at least half of the questions correctly to complete this program and claim your XP reward.
         </p>
         <button
@@ -98,7 +98,7 @@ export default function QuizEngine({ quiz, catColor, onComplete }: Props) {
           <h3 className="font-mono font-bold text-white text-2xl mb-2">
             {result.score} / {result.total} Correct
           </h3>
-          <p className="text-white/40 font-mono text-sm">
+          <p className="text-white font-mono text-sm">
             {result.passed
               ? '🎉 You passed! Program marked as complete.'
               : `You scored ${result.percentage}%. Keep studying and try again!`}
@@ -120,7 +120,7 @@ export default function QuizEngine({ quiz, catColor, onComplete }: Props) {
                 {item.isCorrect ? '✅' : '❌'}
               </span>
               <div>
-                <p className="text-white/70 font-mono text-xs leading-relaxed">{item.question}</p>
+                <p className="text-white font-mono text-xs leading-relaxed">{item.question}</p>
                 {!item.isCorrect && (
                   <p className="text-xs font-mono mt-1" style={{ color: catColor }}>
                     Correct: {quiz.questions[i].options[item.correct]}
@@ -147,7 +147,7 @@ export default function QuizEngine({ quiz, catColor, onComplete }: Props) {
     <div>
       {/* Progress header */}
       <div className="flex items-center justify-between mb-5">
-        <span className="font-mono text-xs text-white/40">
+        <span className="font-mono text-xs text-white">
           Question {index + 1} of {quiz.questions.length}
         </span>
         <div className="w-36 h-1.5 bg-white/8 rounded-full overflow-hidden">
@@ -178,7 +178,7 @@ export default function QuizEngine({ quiz, catColor, onComplete }: Props) {
             style={{
               border: `2px solid ${selected === i ? catColor : 'rgba(255,255,255,.08)'}`,
               background: selected === i ? `${catColor}15` : 'rgba(255,255,255,.04)',
-              color: selected === i ? catColor : 'rgba(255,255,255,.6)',
+              color: selected === i ? catColor : 'rgba(255, 255, 255, 1)',
             }}
           >
             <span className="font-bold mr-2">

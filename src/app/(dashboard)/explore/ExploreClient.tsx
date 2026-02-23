@@ -11,17 +11,17 @@ import Toast from '@/components/ui/Toast'
 import { useSession } from 'next-auth/react'
 
 export default function ExplorePage() {
-  const { data: session }          = useSession()
-  const searchParams               = useSearchParams()
-  const urlSearch                  = searchParams.get('search') ?? ''
+  const { data: session } = useSession()
+  const searchParams = useSearchParams()
+  const urlSearch = searchParams.get('search') ?? ''
 
-  const [programs, setPrograms]    = useState<Program[]>([])
+  const [programs, setPrograms] = useState<Program[]>([])
   const [categories, setCategories] = useState<Category[]>([])
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
-  const [search, setSearch]        = useState(urlSearch)
-  const [loading, setLoading]       = useState(true)
+  const [search, setSearch] = useState(urlSearch)
+  const [loading, setLoading] = useState(true)
   const [openProgram, setOpenProgram] = useState<Program | null>(null)
-  const [toast, setToast]           = useState<string | null>(null)
+  const [toast, setToast] = useState<string | null>(null)
 
   const fetchPrograms = useCallback(async () => {
     setLoading(true)
@@ -101,10 +101,10 @@ export default function ExplorePage() {
           ⚡ LEVEL UP · EARN REWARDS · GET CERTIFIED
         </div>
         <h1 className="font-mono font-black text-4xl md:text-5xl leading-tight mb-4"
-            style={{ background: 'linear-gradient(135deg, #fff 20%, #00f5d4 60%, #4cc9f0)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+          style={{ background: 'linear-gradient(135deg, #fff 20%, #00f5d4 60%, #4cc9f0)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
           Explore Programs
         </h1>
-        <p className="font-mono text-white/35 text-sm max-w-lg mx-auto">
+        <p className="font-mono text-white text-sm max-w-lg mx-auto">
           Learn, complete quizzes, earn XP and certificates
         </p>
       </div>
@@ -151,7 +151,7 @@ export default function ExplorePage() {
             ))}
           </div>
         ) : programs.length === 0 ? (
-          <div className="text-center py-20 text-white/25 font-mono">
+          <div className="text-center py-20 text-white font-mono">
             <div className="text-5xl mb-4">🔍</div>
             <p className="text-lg font-bold">No programs found</p>
             <p className="text-sm mt-1">Try a different search or category</p>

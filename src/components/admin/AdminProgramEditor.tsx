@@ -91,7 +91,7 @@ export default function AdminProgramEditor({ program, catColor, onSaved, onCance
         {field('Duration', 'duration', 'input', 'e.g. 8 weeks')}
         <div>
           {field('Reward XP', 'rewardPoints', 'input')}
-          <p className="text-white/35 text-xs font-mono mt-1">XP points awarded to users upon completion</p>
+          <p className="text-white text-xs font-mono mt-1">XP points awarded to users upon completion</p>
         </div>
       </div>
 
@@ -125,7 +125,7 @@ export default function AdminProgramEditor({ program, catColor, onSaved, onCance
         </button>
         <button
           onClick={onCancel}
-          className="px-6 py-3 rounded-xl font-mono font-bold text-xs uppercase tracking-widest text-white/40 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 transition-all"
+          className="px-6 py-3 rounded-xl font-mono font-bold text-xs uppercase tracking-widest text-white hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 transition-all"
         >
           Cancel
         </button>

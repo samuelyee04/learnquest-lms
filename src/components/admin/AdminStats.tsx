@@ -6,11 +6,11 @@ import { AdminStats as Stats } from '@/types'
 
 interface Props {
   programId: string
-  catColor:  string
+  catColor: string
 }
 
 export default function AdminStats({ programId, catColor }: Props) {
-  const [stats, setStats]   = useState<Stats | null>(null)
+  const [stats, setStats] = useState<Stats | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -23,7 +23,7 @@ export default function AdminStats({ programId, catColor }: Props) {
 
   if (loading) {
     return (
-      <div className="text-center py-10 text-white/25 font-mono text-xs">
+      <div className="text-center py-10 text-white font-mono text-xs">
         Loading stats...
       </div>
     )
@@ -31,17 +31,17 @@ export default function AdminStats({ programId, catColor }: Props) {
 
   if (!stats) {
     return (
-      <div className="text-center py-10 text-white/25 font-mono text-xs">
+      <div className="text-center py-10 text-white font-mono text-xs">
         Could not load stats.
       </div>
     )
   }
 
   const statCards = [
-    { icon: '👥', label: 'Total Enrolled',   value: stats.totalEnrolled.toLocaleString(),  color: '#4cc9f0' },
-    { icon: '✅', label: 'Completion Rate',  value: `${stats.completionRate}%`,            color: '#00f5d4' },
-    { icon: '📊', label: 'Avg Quiz Score',   value: `${stats.avgScore}%`,                  color: catColor  },
-    { icon: '🔥', label: 'Active Today',     value: stats.activeToday?.toString() ?? '—',  color: '#ffd60a' },
+    { icon: '👥', label: 'Total Enrolled', value: stats.totalEnrolled.toLocaleString(), color: '#4cc9f0' },
+    { icon: '✅', label: 'Completion Rate', value: `${stats.completionRate}%`, color: '#00f5d4' },
+    { icon: '📊', label: 'Avg Quiz Score', value: `${stats.avgScore}%`, color: catColor },
+    { icon: '🔥', label: 'Active Today', value: stats.activeToday?.toString() ?? '—', color: '#ffd60a' },
   ]
 
   return (
@@ -67,7 +67,7 @@ export default function AdminStats({ programId, catColor }: Props) {
             >
               {s.value}
             </div>
-            <div className="font-mono text-xs text-white/35 uppercase tracking-widest">
+            <div className="font-mono text-xs text-white uppercase tracking-widest">
               {s.label}
             </div>
           </div>
@@ -80,7 +80,7 @@ export default function AdminStats({ programId, catColor }: Props) {
         style={{ background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.06)' }}
       >
         <div className="flex justify-between mb-3">
-          <span className="font-mono text-xs font-bold text-white/60 uppercase tracking-widest">
+          <span className="font-mono text-xs font-bold text-white uppercase tracking-widest">
             Completion Progress
           </span>
           <span className="font-mono text-xs font-bold" style={{ color: catColor }}>
@@ -96,7 +96,7 @@ export default function AdminStats({ programId, catColor }: Props) {
             }}
           />
         </div>
-        <p className="font-mono text-xs text-white/25 mt-3">
+        <p className="font-mono text-xs text-white mt-3">
           {Math.round(stats.totalEnrolled * stats.completionRate / 100)} of {stats.totalEnrolled} students completed
         </p>
       </div>

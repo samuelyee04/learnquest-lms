@@ -205,7 +205,7 @@ export default function ProgramDetailPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-[#06060f] flex items-center justify-center">
-        <p className="text-white/30 font-mono text-sm">Loading program...</p>
+        <p className="text-white font-mono text-sm">Loading program...</p>
       </div>
     )
   }
@@ -214,15 +214,15 @@ export default function ProgramDetailPage() {
     return (
       <div className="min-h-screen bg-[#06060f] flex flex-col items-center justify-center gap-4 px-4">
         <div className="text-5xl">🔍</div>
-        <p className="text-white/40 font-mono text-sm text-center">
+        <p className="text-white font-mono text-sm text-center">
           {fetchError || 'Program not found'}
         </p>
-        <p className="text-white/25 font-mono text-xs text-center max-w-sm">
+        <p className="text-white font-mono text-xs text-center max-w-sm">
           The program may have been removed or the link is incorrect.
         </p>
         <button
           onClick={() => router.push('/explore')}
-          className="px-6 py-2 rounded-xl bg-white/5 border border-white/10 text-white/50 font-mono text-xs hover:bg-white/10 transition-colors"
+          className="px-6 py-2 rounded-xl bg-white/5 border border-white/10 text-white font-mono text-xs hover:bg-white/10 transition-colors"
         >
           Back to Explore
         </button>
@@ -265,7 +265,7 @@ export default function ProgramDetailPage() {
       {/* Header */}
       <div className="border-b border-white/8">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <button onClick={() => router.back()} className="text-white/30 font-mono text-xs hover:text-white mb-4 inline-block">
+          <button onClick={() => router.back()} className="text-white font-mono text-xs hover:text-white mb-4 inline-block">
             ← Back
           </button>
           <div className="flex items-start justify-between gap-4">
@@ -279,7 +279,7 @@ export default function ProgramDetailPage() {
               <h1 className="font-mono font-bold text-2xl md:text-3xl text-white leading-tight">
                 {program.title}
               </h1>
-              <div className="flex flex-wrap items-center gap-4 mt-3 text-xs font-mono text-white/35">
+              <div className="flex flex-wrap items-center gap-4 mt-3 text-xs font-mono text-white">
                 <span>👥 {program._count?.enrollments ?? 0} students</span>
                 <span>⏱️ {program.duration}</span>
                 <span className="text-yellow-400 font-bold">⚡ +{program.rewardPoints} XP</span>
@@ -288,7 +288,7 @@ export default function ProgramDetailPage() {
             {isAdmin && (
               <button
                 onClick={() => setEditing(true)}
-                className="flex-shrink-0 px-4 py-2 rounded-lg text-xs font-mono font-bold uppercase tracking-wider bg-white/5 border border-white/10 text-white/50 hover:text-white hover:bg-white/10 transition-all"
+                className="flex-shrink-0 px-4 py-2 rounded-lg text-xs font-mono font-bold uppercase tracking-wider bg-white/5 border border-white/10 text-white hover:text-white hover:bg-white/10 transition-all"
               >
                 Edit
               </button>
@@ -303,7 +303,7 @@ export default function ProgramDetailPage() {
                 onClick={() => setTab(t.id)}
                 className={`px-4 py-2.5 text-xs font-mono font-bold uppercase tracking-widest rounded-t-lg transition-all ${tab === t.id
                   ? 'bg-white/5 border border-white/10 border-b-transparent -mb-px'
-                  : 'text-white/30 hover:text-white/60'
+                  : 'text-white hover:text-white/60'
                   }`}
                 style={tab === t.id ? { color: cat.color } : {}}
               >
@@ -319,16 +319,16 @@ export default function ProgramDetailPage() {
 
         {tab === 'overview' && (
           <div className="space-y-8">
-            <p className="text-white/60 font-mono text-sm leading-relaxed whitespace-pre-wrap">{program.description}</p>
+            <p className="text-white font-mono text-sm leading-relaxed whitespace-pre-wrap">{program.description}</p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="bg-white/4 rounded-xl p-5">
                 <h4 className="text-xs font-mono font-bold uppercase tracking-widest mb-3" style={{ color: cat.color }}>About</h4>
-                <p className="text-white/55 text-xs font-mono leading-relaxed whitespace-pre-wrap">{program.about}</p>
+                <p className="text-white text-xs font-mono leading-relaxed whitespace-pre-wrap">{program.about}</p>
               </div>
               <div className="bg-white/4 rounded-xl p-5">
                 <h4 className="text-xs font-mono font-bold uppercase tracking-widest mb-3" style={{ color: cat.color }}>Learning Outcomes</h4>
-                <p className="text-white/55 text-xs font-mono leading-relaxed whitespace-pre-wrap">{program.outcome}</p>
+                <p className="text-white text-xs font-mono leading-relaxed whitespace-pre-wrap">{program.outcome}</p>
               </div>
             </div>
 
@@ -346,7 +346,7 @@ export default function ProgramDetailPage() {
                 <div className="flex flex-wrap gap-4 mt-3">
                   {totalEpisodes > 0 && (
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-mono text-white/40">🎬 Episodes:</span>
+                      <span className="text-xs font-mono text-white">🎬 Episodes:</span>
                       <span className="text-xs font-mono font-bold" style={{ color: cat.color }}>
                         {completedEpisodes}/{totalEpisodes} ({totalEpisodes > 0 ? Math.round((completedEpisodes / totalEpisodes) * 100) : 0}%)
                       </span>
@@ -354,7 +354,7 @@ export default function ProgramDetailPage() {
                   )}
                   {totalQuizzes > 0 && (
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-mono text-white/40">🧠 Quizzes:</span>
+                      <span className="text-xs font-mono text-white">🧠 Quizzes:</span>
                       <span className="text-xs font-mono font-bold" style={{ color: cat.color }}>
                         {uniquePassedQuizzes}/{totalQuizzes} ({totalQuizzes > 0 ? Math.round((uniquePassedQuizzes / totalQuizzes) * 100) : 0}%)
                       </span>
@@ -403,7 +403,7 @@ export default function ProgramDetailPage() {
                   </button>
                 </div>
                 {!isCompleted && (
-                  <p className="text-white/35 font-mono text-xs mt-2">Complete all episodes and quizzes to unlock certificate and claim XP.</p>
+                  <p className="text-white font-mono text-xs mt-2">Complete all episodes and quizzes to unlock certificate and claim XP.</p>
                 )}
               </div>
             )}
@@ -439,7 +439,7 @@ export default function ProgramDetailPage() {
                     <button
                       onClick={handleLeave}
                       disabled={leaving}
-                      className="px-6 py-3 rounded-xl font-mono font-bold text-xs uppercase tracking-widest text-white/40 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 transition-all disabled:opacity-40"
+                      className="px-6 py-3 rounded-xl font-mono font-bold text-xs uppercase tracking-widest text-white hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 transition-all disabled:opacity-40"
                     >
                       {leaving ? '...' : 'Leave program'}
                     </button>
@@ -447,7 +447,7 @@ export default function ProgramDetailPage() {
                 )}
               </div>
               {!isEnrolled && (
-                <p className="text-white/35 font-mono text-xs mt-3">
+                <p className="text-white font-mono text-xs mt-3">
                   Enroll to access episodes, quizzes, and discussion, track progress, and earn your certificate.
                 </p>
               )}
@@ -460,7 +460,7 @@ export default function ProgramDetailPage() {
             {!canAccessLocked ? (
               <div className="rounded-xl p-8 border border-white/10 bg-white/[0.03] text-center">
                 <div className="text-4xl mb-4">🔒</div>
-                <p className="text-white/60 font-mono text-sm mb-2">Episodes are available after you enroll.</p>
+                <p className="text-white font-mono text-sm mb-2">Episodes are available after you enroll.</p>
                 <button
                   onClick={handleEnroll}
                   disabled={enrolling}
@@ -481,7 +481,7 @@ export default function ProgramDetailPage() {
                   />
                 )}
                 {(!program.episodes || program.episodes.length === 0) && !isAdmin ? (
-                  <div className="text-center py-16 text-white/30 font-mono text-sm">
+                  <div className="text-center py-16 text-white font-mono text-sm">
                     <div className="text-4xl mb-4">🎬</div>
                     <p>No episodes available yet.</p>
                   </div>
@@ -515,7 +515,7 @@ export default function ProgramDetailPage() {
                               )}
                               <button
                                 onClick={() => setSelectedEpisode(null)}
-                                className="text-white/50 hover:text-white font-mono text-xs"
+                                className="text-white hover:text-white font-mono text-xs"
                               >
                                 Close
                               </button>
@@ -524,7 +524,7 @@ export default function ProgramDetailPage() {
                         </div>
                       ) : (
                         <div className="rounded-xl p-4 bg-white/5 border border-white/10 flex items-center justify-between">
-                          <p className="font-mono text-white/60 text-sm">{selectedEpisode.title} — no video</p>
+                          <p className="font-mono text-white text-sm">{selectedEpisode.title} — no video</p>
                           <div className="flex items-center gap-3">
                             {isEnrolled && !program.episodeProgress?.includes(selectedEpisode.id) && (
                               <button
@@ -538,7 +538,7 @@ export default function ProgramDetailPage() {
                             {program.episodeProgress?.includes(selectedEpisode.id) && (
                               <span className="text-xs font-mono text-green-400 font-bold">✅ Completed</span>
                             )}
-                            <button onClick={() => setSelectedEpisode(null)} className="text-white/50 hover:text-white text-xs font-mono">Close</button>
+                            <button onClick={() => setSelectedEpisode(null)} className="text-white hover:text-white text-xs font-mono">Close</button>
                           </div>
                         </div>
                       )
@@ -565,7 +565,7 @@ export default function ProgramDetailPage() {
                               </div>
                               <span className="font-mono font-bold text-white text-sm line-clamp-1">{ep.title}</span>
                             </div>
-                            {ep.duration && <p className="font-mono text-white/35 text-xs">{ep.duration}</p>}
+                            {ep.duration && <p className="font-mono text-white text-xs">{ep.duration}</p>}
                             <div className="flex items-center justify-between mt-2">
                               <span className="inline-block text-xs font-mono" style={{ color: cat.color }}>▶ Watch</span>
                               {isEpCompleted && <span className="text-xs font-mono text-green-400/70">Completed</span>}
@@ -617,7 +617,7 @@ export default function ProgramDetailPage() {
                     <div>
                       <button
                         onClick={() => setSelectedQuiz(null)}
-                        className="text-white/50 hover:text-white font-mono text-xs mb-4"
+                        className="text-white hover:text-white font-mono text-xs mb-4"
                       >
                         ← Back to quizzes
                       </button>
@@ -643,7 +643,7 @@ export default function ProgramDetailPage() {
                           >
                             <div className="text-2xl mb-2">{isQuizPassed ? '✅' : '🧠'}</div>
                             <p className="font-mono font-bold text-white text-sm">{q.title || `Quiz ${i + 1}`}</p>
-                            <p className="font-mono text-white/40 text-xs mt-1">{q.questions?.length ?? 0} questions</p>
+                            <p className="font-mono text-white text-xs mt-1">{q.questions?.length ?? 0} questions</p>
                             <div className="flex items-center justify-between mt-2">
                               <span className="inline-block text-xs font-mono" style={{ color: cat.color }}>
                                 {isQuizPassed ? 'Retake →' : 'Start →'}

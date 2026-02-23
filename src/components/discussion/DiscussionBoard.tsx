@@ -156,7 +156,7 @@ export default function DiscussionBoard({ programId, catColor, isAdmin = false, 
             className={`w-2 h-2 rounded-full ${connected || !process.env.NEXT_PUBLIC_SOCKET_URL ? 'bg-green-400' : 'bg-amber-400/80'}`}
             style={connected || !process.env.NEXT_PUBLIC_SOCKET_URL ? { boxShadow: '0 0 6px #4ade80' } : {}}
           />
-          <span className="font-mono text-xs text-white/30">
+          <span className="font-mono text-xs text-white">
             {connected ? 'Live' : !process.env.NEXT_PUBLIC_SOCKET_URL ? 'Online' : connectionAttempted ? 'Offline — updates every few seconds' : 'Connecting…'}
           </span>
         </div>
@@ -179,7 +179,7 @@ export default function DiscussionBoard({ programId, catColor, isAdmin = false, 
               }
             }}
             disabled={clearing || messages.length === 0}
-            className="font-mono text-xs text-white/40 hover:text-red-400 disabled:opacity-40"
+            className="font-mono text-xs text-white hover:text-red-400 disabled:opacity-40"
           >
             {clearing ? 'Clearing…' : 'Clear discussion'}
           </button>
@@ -208,13 +208,13 @@ export default function DiscussionBoard({ programId, catColor, isAdmin = false, 
       {/* Messages list */}
       <div className="space-y-1 max-h-80 overflow-y-auto scrollbar-hide">
         {loading && (
-          <div className="text-center py-10 text-white/25 font-mono text-xs">
+          <div className="text-center py-10 text-white font-mono text-xs">
             Loading discussion...
           </div>
         )}
 
         {!loading && messages.length === 0 && (
-          <div className="text-center py-10 text-white/25 font-mono text-xs">
+          <div className="text-center py-10 text-white font-mono text-xs">
             No messages yet. Be the first to post! 💬
           </div>
         )}
@@ -244,14 +244,14 @@ export default function DiscussionBoard({ programId, catColor, isAdmin = false, 
                   <span className="font-mono font-bold text-xs text-white">
                     {msg.user.name}
                     {isOwn && (
-                      <span className="ml-1.5 text-white/25 font-normal text-xs">(you)</span>
+                      <span className="ml-1.5 text-white font-normal text-xs">(you)</span>
                     )}
                   </span>
-                  <span className="font-mono text-xs text-white/25">
+                  <span className="font-mono text-xs text-white">
                     {formatTime(msg.createdAt)}
                   </span>
                 </div>
-                <p className="font-mono text-xs text-white/60 leading-relaxed break-words">
+                <p className="font-mono text-xs text-white leading-relaxed break-words">
                   {msg.message}
                 </p>
               </div>
@@ -259,7 +259,7 @@ export default function DiscussionBoard({ programId, catColor, isAdmin = false, 
               {/* Like button */}
               <button
                 onClick={() => handleLike(msg.id)}
-                className="flex-shrink-0 flex items-center gap-1.5 text-xs font-mono text-white/25 hover:text-red-400 transition-colors self-start mt-0.5"
+                className="flex-shrink-0 flex items-center gap-1.5 text-xs font-mono text-white/60 hover:text-red-400 transition-colors self-start mt-0.5"
               >
                 ❤️ {msg.likes}
               </button>

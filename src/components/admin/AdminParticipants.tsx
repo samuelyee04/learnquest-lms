@@ -4,13 +4,13 @@
 import { useState, useEffect } from 'react'
 
 interface Participant {
-  id:       string
+  id: string
   progress: number
   completed: boolean
   enrolledAt: string
   user: {
-    id:    string
-    name:  string
+    id: string
+    name: string
     email: string
     avatar: string | null
   }
@@ -18,13 +18,13 @@ interface Participant {
 
 interface Props {
   programId: string
-  catColor:  string
+  catColor: string
 }
 
 export default function AdminParticipants({ programId, catColor }: Props) {
   const [participants, setParticipants] = useState<Participant[]>([])
-  const [loading, setLoading]           = useState(true)
-  const [removing, setRemoving]         = useState<string | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [removing, setRemoving] = useState<string | null>(null)
 
   useEffect(() => {
     fetch(`/api/admin/participants?programId=${programId}`)
@@ -53,7 +53,7 @@ export default function AdminParticipants({ programId, catColor }: Props) {
 
   if (loading) {
     return (
-      <div className="text-center py-10 text-white/25 font-mono text-xs">
+      <div className="text-center py-10 text-white font-mono text-xs">
         Loading participants...
       </div>
     )
@@ -61,7 +61,7 @@ export default function AdminParticipants({ programId, catColor }: Props) {
 
   if (participants.length === 0) {
     return (
-      <div className="text-center py-10 text-white/25 font-mono text-xs">
+      <div className="text-center py-10 text-white font-mono text-xs">
         No participants enrolled yet.
       </div>
     )
@@ -73,7 +73,7 @@ export default function AdminParticipants({ programId, catColor }: Props) {
         <h3 className="font-mono font-bold text-white text-sm">
           👥 {participants.length} Participants
         </h3>
-        <div className="text-xs font-mono text-white/35">
+        <div className="text-xs font-mono text-white">
           {participants.filter(p => p.completed).length} completed
         </div>
       </div>
@@ -97,7 +97,7 @@ export default function AdminParticipants({ programId, catColor }: Props) {
               {/* Name + email */}
               <div className="flex-1 min-w-0">
                 <p className="font-mono font-bold text-white text-xs truncate">{p.user.name}</p>
-                <p className="font-mono text-white/35 text-xs truncate">{p.user.email}</p>
+                <p className="font-mono text-white text-xs truncate">{p.user.email}</p>
               </div>
 
               {/* Progress */}

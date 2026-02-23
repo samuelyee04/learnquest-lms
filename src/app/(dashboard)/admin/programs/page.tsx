@@ -116,7 +116,7 @@ export default function AdminProgramsPage() {
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="font-mono font-black text-3xl text-white">Manage Programs</h1>
-            <p className="font-mono text-white/35 text-sm mt-1">
+            <p className="font-mono text-white text-sm mt-1">
               {programs.length} program{programs.length !== 1 ? 's' : ''} total
             </p>
           </div>
@@ -198,7 +198,7 @@ export default function AdminProgramsPage() {
                 placeholder="XP reward"
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm font-mono outline-none placeholder:text-white/25"
               />
-              <p className="text-white/35 text-xs font-mono mt-1">XP points awarded to users upon program completion</p>
+              <p className="text-white text-xs font-mono mt-1">XP points awarded to users upon program completion</p>
             </div>
             <button
               onClick={handleCreate}
@@ -218,7 +218,7 @@ export default function AdminProgramsPage() {
             ))}
           </div>
         ) : programs.length === 0 ? (
-          <div className="text-center py-20 text-white/25 font-mono">
+          <div className="text-center py-20 text-white font-mono">
             <div className="text-5xl mb-4">📦</div>
             <p className="text-lg font-bold">No programs yet</p>
             <p className="text-sm mt-1">Create your first program above</p>
@@ -234,7 +234,7 @@ export default function AdminProgramsPage() {
                   <span className="text-2xl pt-1">{p.category?.icon ?? '📚'}</span>
                   <div className="flex-1 min-w-0">
                     <h3 className="font-mono font-bold text-white text-sm truncate">{p.title}</h3>
-                    <div className="flex items-center gap-3 mt-1 text-xs font-mono text-white/35 flex-wrap">
+                    <div className="flex items-center gap-3 mt-1 text-xs font-mono text-white flex-wrap">
                       <span style={{ color: p.category?.color }}>{p.category?.name}</span>
                       <span>◆ {p.difficulty}</span>
                       <span>👥 {p._count?.enrollments ?? 0}</span>
@@ -245,7 +245,7 @@ export default function AdminProgramsPage() {
                 <div className="flex items-center justify-end sm:justify-start gap-2 w-full sm:w-auto mt-2 sm:mt-0 pt-3 sm:pt-0 border-t border-white/10 sm:border-0 pl-0 sm:pl-2">
                   <button
                     onClick={() => setEditing(p)}
-                    className="flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-mono font-bold uppercase tracking-wider bg-white/5 border border-white/10 text-white/50 hover:text-white hover:bg-white/10 transition-all text-center"
+                    className="flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-mono font-bold uppercase tracking-wider bg-white/5 border border-white/10 text-white hover:text-white hover:bg-white/10 transition-all text-center"
                   >
                     Edit
                   </button>
